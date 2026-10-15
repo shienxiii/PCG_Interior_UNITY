@@ -169,6 +169,11 @@ namespace ProceduralInterior
             _random = new System.Random(inSeed);
         }
 
+        public bool IsValidPointOnGrid(Vector2Int point)
+        {
+            return point.x >= 0 && point.y >= 0 && point.x < _grid.GetLength(0) && point.y < _grid.GetLength(1);
+        }
+
         public void Clear()
         {
             // clear all room and wall information
