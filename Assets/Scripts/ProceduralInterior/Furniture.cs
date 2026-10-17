@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProceduralInterior.Types;
+using ProceduralInterior.FunctionLib;
 using UnityEngine;
 
 namespace ProceduralInterior
@@ -40,29 +41,6 @@ namespace ProceduralInterior
             outWalkables = LocalPointToSpawnPoint(inPrefab._walkables, inOffset, radians);
         }
 
-        public static Vector2Int CalculateSpan(List<Vector2Int> samples, out GridSpan span)
-        {
-            if (samples == null || samples.Count == 0)
-            {
-                span = new GridSpan(Vector2Int.zero);
-                return Vector2Int.zero;
-            }
-
-            span = new GridSpan(samples[0]);
-
-            for (int i = 1; i < samples.Count; i++)
-            {
-                Vector2Int point = samples[i];
-                
-                span.A.x = Math.Min(span.A.x, point.x);
-                span.A.y = Math.Min(span.A.y, point.y);
-                span.B.x = Math.Max(span.B.x, point.x);
-                span.B.y = Math.Max(span.B.y, point.y);
-            }
-
-            return span.GetDimension();
-        }
-
         private static List<Vector2Int> LocalPointToSpawnPoint(List<Vector2Int> localOffset, Vector2Int inSpawnPoint, float radians)
         {
             List<Vector2Int> spawnOffset = new();
@@ -94,34 +72,8 @@ namespace ProceduralInterior
 
         private void OnValidate()
         {
-            if (_occupy != null && _occupy.Count > 0)
-                _span.A = _span.B = _occupy[0];
-            else if (_reserve != null && _reserve.Count > 0)
-                _span.A = _span.B = _reserve[0];
-            else
-                return;
-
-            if (_occupy != null)
-            {
-                foreach (Vector2Int point in _occupy)
-                {
-                    _span.A.x = Math.Min(_span.A.x, point.x);
-                    _span.A.y = Math.Min(_span.A.y, point.y);
-                    _span.B.x = Math.Max(_span.B.x, point.x);
-                    _span.B.y = Math.Max(_span.B.y, point.y);
-                }
-            }
-
-            if (_reserve != null)
-            {
-                foreach (Vector2Int point in _reserve)
-                {
-                    _span.A.x = Math.Min(_span.A.x, point.x);
-                    _span.A.y = Math.Min(_span.A.y, point.y);
-                    _span.B.x = Math.Max(_span.B.x, point.x);
-                    _span.B.y = Math.Max(_span.B.y, point.y);
-                }
-            }
+            List<Vector2Int> samples = SampleHelperFunctions.MergeLists(_occupy, _reserve);
+            SampleHelperFunctions.CalculateSpan(samples, out _span);
         }
 
         private void OnDrawGizmos()
@@ -130,45 +82,28 @@ namespace ProceduralInterior
             if (!settings) return;
 
             Vector3 sampleSize = new Vector3(settings.SampleDimension.x - 0.1f, 0.0f, settings.SampleDimension.x - 0.1f);
-            Vector3 position = transform.position;
             float yRotationEuler = transform.rotation.eulerAngles.y;
-
-            
             
             CalculateGridSpaceRequired(this, yRotationEuler, Vector2Int.zero, out List<Vector2Int> occupies, out  List<Vector2Int> reserves, out List<Vector2Int> walkables);
             
-            // draw occupied
-            Gizmos.color = Color.red;
-
-            if (occupies != null)
-            {
-                foreach (Vector2Int point in occupies)
-                {
-                    Vector3 offset = new Vector3(point.x * sampleSize.x, 0.0f, point.y * sampleSize.x);
-                    Vector3 pos = position + offset;
-
-                    Gizmos.DrawCube(pos, sampleSize);
-                }
-            }
-
-            Gizmos.color = Color.green;
+            DrawDebugSamples(occupies, Color.red, sampleSize);
+            DrawDebugSamples(reserves, Color.green, sampleSize);
+            DrawDebugSamples(walkables, Color.cyan, sampleSize);
             
-            if (reserves != null)
-            {
-                foreach (Vector2Int point in reserves)
-                {
-                    Vector3 offset = new Vector3(point.x * sampleSize.x, 0.0f, point.y * sampleSize.x);
-                    Vector3 pos = position + offset;
+            List<Vector2Int> spanSamples = SampleHelperFunctions.MergeLists(occupies, reserves);
+            SampleHelperFunctions.CalculateSpan(spanSamples, out GridSpan span);
 
-                    Gizmos.DrawCube(pos, sampleSize);
-                }
-            }
-            
-            Gizmos.color = Color.cyan;
-            
-            if (walkables != null)
+            DrawDebugSample(span.A, Color.white, sampleSize);
+            DrawDebugSample(span.B, Color.black, sampleSize);
+        }
+
+        private void DrawDebugSamples(List<Vector2Int> samples, Color debugColor, Vector3 sampleSize)
+        {
+            Gizmos.color = debugColor;
+
+            if (samples != null)
             {
-                foreach (Vector2Int point in walkables)
+                foreach (Vector2Int point in samples)
                 {
                     Vector3 offset = new Vector3(point.x * sampleSize.x, 0.0f, point.y * sampleSize.x);
                     Vector3 pos = transform.position + offset;
@@ -176,29 +111,15 @@ namespace ProceduralInterior
                     Gizmos.DrawCube(pos, sampleSize);
                 }
             }
-            
-            List<Vector2Int> spanSamples = new();
-            if (occupies != null)
-                spanSamples.AddRange(occupies);
-            if(reserves != null)
-                spanSamples.AddRange(reserves);
-            
-            CalculateSpan(spanSamples, out GridSpan span);
+        }
 
-                
-            Gizmos.color = Color.yellow;
-            {
-                Vector3 offset = new Vector3(span.A.x * sampleSize.x, 0.0f, span.A.y * sampleSize.x);
-                Vector3 pos = position + offset;
-                Gizmos.DrawSphere(pos, sampleSize.x / 3);
-            }
+        private void DrawDebugSample(Vector2Int sample, Color debugColor, Vector3 sampleSize)
+        {
+            Gizmos.color = debugColor;
             
-            Gizmos.color = Color.magenta;
-            {
-                Vector3 offset = new Vector3(span.B.x * sampleSize.x, 0.0f, span.B.y * sampleSize.x);
-                Vector3 pos = position + offset;
-                Gizmos.DrawSphere(pos, sampleSize.x / 3);
-            }
+            Vector3 offset = new Vector3(sample.x * sampleSize.x, 0.0f, sample.y * sampleSize.x);
+            Vector3 pos = transform.position + offset;
+            Gizmos.DrawSphere(pos, sampleSize.x / 3);
         }
     }
 }

@@ -67,9 +67,9 @@ public static class GridParser
         return true;
     }
     
-    public static bool AreReservedSamplesReachable(Sample[,] samples, List<Vector2Int> reservedSamples)
+    public static bool AreReservedSamplesReachable(Sample[,] grid, List<Vector2Int> reservedSamples)
     {
-        if (samples == null || samples.Length == 0)
+        if (grid == null || grid.Length == 0)
             return false;
 
         if (reservedSamples == null || reservedSamples.Count == 0)
@@ -77,18 +77,18 @@ public static class GridParser
 
         Vector2Int start = reservedSamples[0];
 
-        if (!IsValidPoint(samples, start))
+        if (!IsValidPoint(grid, start))
             return false;
 
-        Sample startSample = samples[start.x, start.y];
+        Sample startSample = grid[start.x, start.y];
 
         if (startSample.State != SampleState.RESERVED)
             return false;
         
         int roomIndex = startSample.RoomIndex;
         
-        int width = samples.GetLength(0);
-        int height = samples.GetLength(1);
+        int width = grid.GetLength(0);
+        int height = grid.GetLength(1);
 
         // Copy the list so the original is not modified.
         HashSet<Vector2Int> remaining = new HashSet<Vector2Int>(reservedSamples);
@@ -117,13 +117,13 @@ public static class GridParser
             {
                 Vector2Int next = current + direction;
 
-                if (!IsValidPoint(samples, next))
+                if (!IsValidPoint(grid, next))
                     continue;
 
                 if (visited.Contains(next))
                     continue;
 
-                Sample sample = samples[next.x, next.y];
+                Sample sample = grid[next.x, next.y];
 
                 if (sample.State == SampleState.OCCUPIED ||
                     sample.RoomIndex != roomIndex)
@@ -141,14 +141,12 @@ public static class GridParser
         return remaining.Count == 0;
     }
 
-    private static bool IsValidPoint(
-        Sample[,] samples,
-        Vector2Int point)
+    private static bool IsValidPoint(Sample[,] grid, Vector2Int point)
     {
         return point.x >= 0 &&
-               point.x < samples.GetLength(0) &&
+               point.x < grid.GetLength(0) &&
                point.y >= 0 &&
-               point.y < samples.GetLength(1) &&
-               samples[point.x, point.y] != null;
+               point.y < grid.GetLength(1) &&
+               grid[point.x, point.y] != null;
     }
 }
