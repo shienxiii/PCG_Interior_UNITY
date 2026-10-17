@@ -787,9 +787,9 @@ MonoBehaviour:
   _walkables:
   - {x: 0, y: -1}
   _reserve:
-  - {x: 0, y: 1}
+  - {x: 1, y: 1}
   - {x: 1, y: 0}
-  - {x: 0, y: -2}
+  - {x: -1, y: -2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

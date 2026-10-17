@@ -138,13 +138,13 @@ namespace ProceduralInterior.FunctionLib
 
         /// <summary>
         /// Extract a chunk of sample with a specified dimension from an Interior based on
-        /// a start point and return them as a 2d array of bool where any samples with that
+        /// the selected room and return them as a 2d array of bool where any samples with that
         /// matches the given roomIndex will be marked true on the array
         /// </summary>
         /// <param name="interior">Interior instance to extract from</param>
         /// <param name="roomIndex">the room index to search for</param>
-        /// <param name="matchCount">The dimension of the samples to extract</param>
-        /// <returns></returns>
+        /// <param name="matchCount">number of samples matching the roomIndex, essentially number of true in the returned bool matrix</param>
+        /// <returns>bool matrix representing the selected room sized to the room's span</returns>
         public static bool[,] ExtractRoomSamples(Interior interior, int roomIndex, out int matchCount)
         {
             matchCount = 0;
