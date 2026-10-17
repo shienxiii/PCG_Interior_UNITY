@@ -72,8 +72,8 @@ namespace ProceduralInterior
 
         private void OnValidate()
         {
-            List<Vector2Int> samples = SampleHelperFunctions.MergeLists(_occupy, _reserve);
-            SampleHelperFunctions.CalculateSpan(samples, out _span);
+            List<Vector2Int> samples = RoomFurnisher.MergeLists(_occupy, _reserve);
+            RoomFurnisher.CalculateSpan(samples, out _span);
         }
 
         private void OnDrawGizmos()
@@ -90,8 +90,8 @@ namespace ProceduralInterior
             DrawDebugSamples(reserves, Color.green, sampleSize);
             DrawDebugSamples(walkables, Color.cyan, sampleSize);
             
-            List<Vector2Int> spanSamples = SampleHelperFunctions.MergeLists(occupies, reserves);
-            SampleHelperFunctions.CalculateSpan(spanSamples, out GridSpan span);
+            List<Vector2Int> spanSamples = RoomFurnisher.MergeLists(occupies, reserves);
+            RoomFurnisher.CalculateSpan(spanSamples, out GridSpan span);
 
             DrawDebugSample(span.A, Color.white, sampleSize);
             DrawDebugSample(span.B, Color.black, sampleSize);

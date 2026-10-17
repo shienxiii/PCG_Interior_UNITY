@@ -19,7 +19,6 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/FunctionLib/InteriorSpawner.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/FunctionLib/RoomFurnisher.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/FunctionLib/RoomSampler.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/FunctionLib/SampleHelperFunctions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/Types/InteriorSettings.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/Types/RoomTheme.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.splines@e6e1d5900acc/Runtime/BezierKnot.cs" root0="SKIP_HIGHLIGHTING" />
@@ -94,7 +93,7 @@
       <workItem from="1790775664664" duration="8030000" />
       <workItem from="1790828041910" duration="23707000" />
       <workItem from="1791038507105" duration="7886000" />
-      <workItem from="1792060059497" duration="49548000" />
+      <workItem from="1792060059497" duration="50321000" />
     </task>
     <servers />
   </component>
