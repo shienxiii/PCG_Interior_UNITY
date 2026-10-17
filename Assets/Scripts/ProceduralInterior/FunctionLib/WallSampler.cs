@@ -127,15 +127,13 @@ namespace ProceduralInterior.FunctionLib
                     (walls[nextIndex], walls[swapIndex]) = (walls[swapIndex], walls[nextIndex]);
             }
             
-            // Now that the wall is sorted, we want to apply the offsets
+            // Now that the wall is sorted, we want to apply the offsets at the end point
             if(!settings.OffsetWallEndPoints) return;
             
             for (int u = 0; u < walls.Count; u++)
             {
                 int v = (u + 1) % walls.Count;
-                
-                if(!settings.OffsetWallEndPoints) continue;
-                
+
                 Wall current = walls[u];
                 Wall next = walls[v];
 
@@ -144,8 +142,7 @@ namespace ProceduralInterior.FunctionLib
                 current.OffsetEnd(next.Normal, settings.OffsetLength);
                 next.OffsetStart(current.Normal, settings.OffsetLength);
 
-                walls[u] = current;
-                walls[v] = next;
+                (walls[u], walls[v]) = (current, next);
             }
         }
 

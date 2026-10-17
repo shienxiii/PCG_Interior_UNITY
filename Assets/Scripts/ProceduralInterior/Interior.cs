@@ -103,8 +103,8 @@ namespace ProceduralInterior
 
                 _span.A.x = Mathf.Min(point.x, _span.A.x);
                 _span.A.z = Mathf.Min(point.z, _span.A.z);
-                _span.B.x   = Mathf.Max(point.x, _span.B.x);
-                _span.B.z   = Mathf.Max(point.z, _span.B.z);
+                _span.B.x = Mathf.Max(point.x, _span.B.x);
+                _span.B.z = Mathf.Max(point.z, _span.B.z);
             }
 
             gridSize = new Vector2Int(Mathf.CeilToInt((_span.B.x - _span.A.x) / settings.SampleDimension.x),

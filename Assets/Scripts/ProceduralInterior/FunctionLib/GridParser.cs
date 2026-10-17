@@ -5,6 +5,68 @@ using ProceduralInterior.Types;
 
 public static class GridParser
 {
+    public static bool CanOccupy(Sample[,] grid, List<Vector2Int> toOccupy, int roomIndex)
+    {
+        if (grid == null || toOccupy == null)
+            return false;
+
+        int width = grid.GetLength(0);
+        int height = grid.GetLength(1);
+
+        foreach (Vector2Int point in toOccupy)
+        {
+            // Outside the grid.
+            if (point.x < 0 || point.x >= width ||
+                point.y < 0 || point.y >= height)
+                return false;
+
+            Sample sample = grid[point.x, point.y];
+            
+            // sample must not be null, be free and match the roomIndex
+            if (sample == null ||
+                sample.State != SampleState.FREE ||
+                sample.RoomIndex != roomIndex)
+                return false;
+        }
+
+        return true;
+    }
+    
+    /// <summary>
+    /// Determine if the provided points can be reserved
+    /// </summary>
+    /// <param name="grid">the grid to occupy</param>
+    /// <param name="toReserve">points of sample to reserve</param>
+    /// <param name="roomIndex">room index of the samples to reserve</param>
+    /// <param name="requireAll">Whether to require all points to be reserved or only partial</param>
+    /// <returns></returns>
+    public static bool CanReserve(Sample[,] grid, List<Vector2Int> toReserve, int roomIndex)
+    {
+        if (grid == null || toReserve == null)
+            return false;
+
+        int width = grid.GetLength(0);
+        int height = grid.GetLength(1);
+
+        foreach (Vector2Int point in toReserve)
+        {
+            // Outside the grid.
+            if (point.x < 0 || point.x >= width ||
+                point.y < 0 || point.y >= height)
+                return false;
+
+            Sample sample = grid[point.x, point.y];
+            
+            // sample must not be null or occupied, and must match the roomIndex
+            if (sample == null ||
+                sample.State == SampleState.OCCUPIED ||
+                sample.RoomIndex != roomIndex)
+                return false;
+        }
+
+        return true;
+    }
+    
     public static bool AreReservedSamplesReachable(Sample[,] samples, List<Vector2Int> reservedSamples)
     {
         if (samples == null || samples.Length == 0)

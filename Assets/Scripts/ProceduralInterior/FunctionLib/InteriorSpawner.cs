@@ -72,12 +72,12 @@ namespace ProceduralInterior.FunctionLib
 
             if (!groundPrefab.Prefab && !ceilingPrefab.Prefab) return;
 
-            float sampleX = inSettings.SampleDimension.x;
+            float sampleDimX = inSettings.SampleDimension.x;
 
             foreach (GridSpan space in inRoom.Spaces)
             {
                 Vector3 start = interior.GridPointToWorldPoint(space.A, false);
-                Vector3 end = interior.GridPointToWorldPoint(space.B, false) + new Vector3(sampleX, 0.0f, sampleX);
+                Vector3 end = interior.GridPointToWorldPoint(space.B, false) + new Vector3(sampleDimX, 0.0f, sampleDimX);
                 Vector3 center = (start + end) / 2;
 
                 SpawnStructure(groundPrefab, space.GetDimension(), center);
@@ -88,9 +88,9 @@ namespace ProceduralInterior.FunctionLib
             {
                 if (!prefab.Prefab) return;
             
-                Vector3 scale = new Vector3(sampleX * spaceDimension.x / prefab.Dimension.x,
+                Vector3 scale = new Vector3(sampleDimX * spaceDimension.x / prefab.Dimension.x,
                     1.0f,
-                    sampleX * spaceDimension.y / prefab.Dimension.z);
+                    sampleDimX * spaceDimension.y / prefab.Dimension.z);
             
                 GameObject newStructure = Object.Instantiate(prefab.Prefab, point, Quaternion.identity);
                 newStructure.transform.localScale = scale;

@@ -90,7 +90,6 @@ namespace ProceduralInterior
                 guiHandler = _ =>
                 {
                     SerializedObject serializedObject = ProceduralInteriorSettings.GetSerializedSettings();
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("_interior"), new GUIContent("Interior"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_interiors"), new GUIContent("Interiors"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_defaultGround"), new GUIContent("Default Ground"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_defaultWall"), new GUIContent("Default Wall"));
@@ -102,7 +101,6 @@ namespace ProceduralInterior
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_maxRoomCount"), new GUIContent("Max Room Count"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_roomSizeOffset"), new GUIContent("Offset"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_minSamplesPerRoom"), new GUIContent("MinSamplesPerRoom"));
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("_offsetWallNormal"), new GUIContent("Offset Wall Normal"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_offsetWallEndPoints"), new GUIContent("Offset Wall End Points"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_offsetLength"), new GUIContent("Offset Length"));
                     serializedObject.ApplyModifiedProperties();

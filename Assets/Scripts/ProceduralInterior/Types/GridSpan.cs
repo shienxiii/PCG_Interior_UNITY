@@ -6,6 +6,7 @@ namespace ProceduralInterior.Types
     /// Holds 2 Vector2Int points which represents a grid's span.
     /// Constructor will always ensure both x and y of vector A to be smaller than vector B
     /// </summary>
+    [System.Serializable]
     public struct GridSpan
     {
         public Vector2Int A;
@@ -35,8 +36,6 @@ namespace ProceduralInterior.Types
         /// <returns></returns>
         public Vector2Int GetDimension()
         {
-            if (A == null || B == null) return Vector2Int.zero;
-
             Vector2Int diff = B - A;
             return new Vector2Int(Mathf.Abs(diff.x) + 1, Mathf.Abs(diff.y) + 1);
         }
