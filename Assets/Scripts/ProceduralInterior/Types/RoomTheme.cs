@@ -10,6 +10,11 @@ using UnityEngine;
 public class RoomTheme : ScriptableObject
 {
     // Furnitures that must be spawned in the room being given this theme
-    private List<Furniture> _main;
-    private List<Furniture> _sub;
+    [SerializeField] private List<Furniture> _main;
+    
+    // Optional furnitures, does not always need to be spawned
+    [SerializeField] private List<Furniture> _sub;
+
+    public List<Furniture> Main => _main;
+    public List<Furniture> Sub => _sub;
 }

@@ -32,8 +32,8 @@ namespace ProceduralInterior.FunctionLib
         // Use a provided System.Random to get a random element on the provided list and optionally remove from list
         public static T GetRandomElement<T>(List<T> list, System.Random random, bool bRemoveFromList = false)
         {
-            //return default(T);
-
+            if (list == null || list.Count == 0) return default(T);
+            
             T element = list[random.Next(list.Count)];
 
             if (bRemoveFromList)

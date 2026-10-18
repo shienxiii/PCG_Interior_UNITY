@@ -46,14 +46,12 @@ namespace ProceduralInterior
         [ContextMenu("Spawn Level")]
         public void SpawnLevel()
         {
-            Debug.Log("Spawn Level called");
             if (!Settings || _random == null) return;
-            Debug.Log("Initialization check complete");
+            
             List<InteriorSettings> options = Settings.Interior;
             
             if (options == null || options.Count == 0) return;
-            Debug.Log("Options found");
-
+            
             // Spawning single interior for now
             InteriorSettings option = SamplerHelperFunctions.GetRandomElement(options, _random);
             Interior prefab = option.Prefabs;
@@ -61,7 +59,7 @@ namespace ProceduralInterior
             if (!prefab) return;
 
             Interior newInterior = InteriorSpawner.SpawnInterior(prefab, _random, Vector3.zero);
-            newInterior.SeedInterior(_random.Next());
+            newInterior.SeedInterior(_random.Next(), _random.Next());
             newInterior.SampleInterior(0);
             InteriorSpawner.SpawnStructures(newInterior);
         }

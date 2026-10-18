@@ -12,14 +12,13 @@ namespace ProceduralInterior.FunctionLib
     {
         public static Interior SpawnInterior(Interior inPrefab, System.Random random, Vector3 inPosition)
         {
-            Debug.Log("SpawnInterior()");
             if (inPrefab == null || random == null) return null;
 
             // apply random 90-degree rotation
             float yRotate = (random.Next() % 4) * 90.0f;
             
             Interior newInterior = Object.Instantiate(inPrefab, inPosition, Quaternion.Euler(0.0f, yRotate, 0.0f));
-            Debug.Log("Spawn attempt " + newInterior != null);
+            
             return newInterior;
         }
 

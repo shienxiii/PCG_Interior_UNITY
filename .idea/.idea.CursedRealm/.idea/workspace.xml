@@ -21,6 +21,7 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/FunctionLib/RoomSampler.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/Types/InteriorSettings.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/ProceduralInterior/Types/RoomTheme.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.universal@be00b5bbd9a1/Editor/2D/Overrides/MeshEditor2DURP.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.splines@e6e1d5900acc/Runtime/BezierKnot.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.splines@e6e1d5900acc/Runtime/Spline.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
@@ -94,6 +95,8 @@
       <workItem from="1790828041910" duration="23707000" />
       <workItem from="1791038507105" duration="7886000" />
       <workItem from="1792060059497" duration="50321000" />
+      <workItem from="1792315569825" duration="6347000" />
+      <workItem from="1792329146736" duration="8252000" />
     </task>
     <servers />
   </component>

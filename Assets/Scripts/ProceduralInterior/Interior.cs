@@ -23,24 +23,27 @@ namespace ProceduralInterior
         
         private List<Room> _rooms     = new List<Room>();
         private List<Border> _borders = new List<Border>();
-        private System.Random _random = null;
+        private System.Random _roomRandom = null;
+        private System.Random _furnishingRandom = null;
 
         /*** PUBLIC PROPERTIES ***/
         public System.Guid  AssetID => System.Guid.Parse(_assetID);
         public Sample[,] Grid       => _grid;
         public List<Room> Rooms     => _rooms;
         public List<Border> Borders => _borders;
-        public System.Random Random => _random;
+        public System.Random RoomRandom => _roomRandom;
+        public System.Random FurnishingRandom => _furnishingRandom;
 
         #if UNITY_EDITOR
             [Header("Debug")]
-            [SerializeField] private int _splineToDebug = 0;
-            [SerializeField] public bool _applySeed     = false;
-            [SerializeField] public int _debugSeed      = 5000;
-            [SerializeField] private bool _drawFloor   = false;
-            [SerializeField] private bool _drawWall     = false;
-            [SerializeField] private bool _drawReserved = false;
-            [SerializeField] private bool _spawnStructures = false;
+            [SerializeField] private int _splineToDebug      = 0;
+            [SerializeField] public bool _applySeed          = false;
+            [SerializeField] public int _debugRoomSeed       = 5000;
+            [SerializeField] public int _debugFurnishingSeed = 5000;
+            [SerializeField] private bool _drawFloor         = false;
+            [SerializeField] private bool _drawWall          = false;
+            [SerializeField] private bool _drawReserved      = false;
+            [SerializeField] private bool _spawnStructures   = false;
         #endif
         
         /// <summary>
@@ -53,7 +56,7 @@ namespace ProceduralInterior
             Clear();
             
             // Should only be called after seeding
-            if (_random == null) return;
+            if (_roomRandom == null && _furnishingRandom == null) return;
             
             if (_areas == null)
                 _areas = GetComponent<SplineContainer>();
@@ -164,9 +167,15 @@ namespace ProceduralInterior
             return worldPoint;
         }
 
-        public void SeedInterior(int inSeed)
+        public void SeedInterior(int inRoomSeed, int inFurnishingSeed)
         {
-            _random = new System.Random(inSeed);
+            #if UNITY_EDITOR
+                _debugRoomSeed = inRoomSeed;
+                _debugFurnishingSeed = inFurnishingSeed;
+            #endif
+            
+            _roomRandom = new System.Random(inRoomSeed);
+            _furnishingRandom = new System.Random(inFurnishingSeed);
         }
 
         public bool IsValidPointOnGrid(Vector2Int point)
@@ -190,9 +199,12 @@ namespace ProceduralInterior
             public void DebugGenerate()
             {
                 if (!_applySeed)
-                    _debugSeed = unchecked((int)System.DateTime.Now.Ticks);
+                {
+                    _debugRoomSeed = unchecked((int)System.DateTime.Now.Ticks);
+                    _debugFurnishingSeed = unchecked((int)System.DateTime.Now.Ticks);
+                }
 
-                SeedInterior(_debugSeed);
+                SeedInterior(_debugRoomSeed, _debugFurnishingSeed);
                 SampleInterior(_splineToDebug);
                     
                 if(_spawnStructures)
@@ -281,7 +293,7 @@ namespace ProceduralInterior
             {
                 if (!Guid.TryParse(_assetID, out Guid test))
                 {
-                    Debug.Log("Invalid Asset ID, assigning new ID");
+                    Debug.Log($"{gameObject.name} Invalid Asset ID, assigning new ID");
                     _assetID = Guid.NewGuid().ToString();
                 }
             }

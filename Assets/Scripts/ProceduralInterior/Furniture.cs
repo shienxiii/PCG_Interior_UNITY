@@ -23,6 +23,19 @@ namespace ProceduralInterior
         private List<Vector2Int> _reserve;
 
         /// <summary>
+        /// Get the required number of span for this Furniture.
+        /// This consists of grid to occupy and to reserve.
+        /// </summary>
+        /// <returns></returns>
+        public Vector2Int GetRequiredSpan()
+        {
+            if (_occupy.Count == 0 && _reserve.Count == 0)
+                return Vector2Int.zero;
+
+            return _span.GetDimension();
+        }
+
+        /// <summary>
         /// Calculate the grid point of this Furniture with rotation and position offset applied
         /// </summary>
         /// <param name="inPrefab">the furniture we're spawning</param>
@@ -69,13 +82,14 @@ namespace ProceduralInterior
         
             return new Vector2Int(newX, newY);
         }
-
+        
         private void OnValidate()
         {
             List<Vector2Int> samples = RoomFurnisher.MergeLists(_occupy, _reserve);
             RoomFurnisher.CalculateSpan(samples, out _span);
         }
 
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             ProceduralInteriorSettings settings = InteriorManager.Settings;
@@ -122,4 +136,5 @@ namespace ProceduralInterior
             Gizmos.DrawSphere(pos, sampleSize.x / 3);
         }
     }
+#endif
 }
