@@ -27,8 +27,7 @@ namespace ProceduralInterior.FunctionLib
             Vector2Int s = new(1, 1);
             return count % 2 == 1;
         }
-
-
+        
         // Use a provided System.Random to get a random element on the provided list and optionally remove from list
         public static T GetRandomElement<T>(List<T> list, System.Random random, bool bRemoveFromList = false)
         {
@@ -57,6 +56,20 @@ namespace ProceduralInterior.FunctionLib
             TestCardinalSample(sample + new Vector2Int(-1, 0));
             TestCardinalSample(sample + new Vector2Int(0, 1));
             TestCardinalSample(sample + new Vector2Int(0, -1));
+        }
+        
+        public static List<T> MergeLists<T>(params List<T>[] inLists)
+        {
+            int size = 0;
+            foreach (List<T> list in inLists)
+                if(list != null) size += list.Count;
+
+            List<T> mergedList = new List<T>(size);
+
+            foreach (List<T> list in inLists)
+                if(list != null) mergedList.AddRange(list);
+
+            return mergedList;
         }
     }
 }

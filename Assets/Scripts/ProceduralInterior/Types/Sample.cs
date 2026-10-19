@@ -3,16 +3,18 @@ namespace ProceduralInterior.Types
 
     /// <summary>
     /// This enum serve as a flag on a sample.
-    /// FREE        : Available to spawn static objects on top on
-    /// WALKABLE    : Similar as FREE except cannot be occupied. Can be changed to RESERVED
-    /// RESERVED    : Must be left free and must be reachable
-    /// OCCUPIED    : A static object have been spawned on it and is treated as non-path
+    /// FREE           : Available to spawn static objects on top on
+    /// WALKABLE       : Similar as FREE except cannot be occupied. Can be changed to RESERVED
+    /// RESERVED       : Must be left free and must be reachable
+    /// RESERVED_BLOCK : Same as RESERVED, must be reachable but also OCCUPIED, treated as non-path 
+    /// OCCUPIED       : A static object have been spawned on it and is treated as non-path
     /// </summary>
     public enum SampleState
     {
         FREE,
         WALKABLE,
         RESERVED,
+        RESERVED_BLOCK,
         OCCUPIED
     }
 

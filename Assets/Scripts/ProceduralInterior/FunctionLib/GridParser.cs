@@ -5,7 +5,7 @@ using ProceduralInterior.Types;
 
 public static class GridParser
 {
-    public static bool CanOccupy(Sample[,] grid, List<Vector2Int> toOccupy, int roomIndex)
+    /*public static bool CanOccupy(Sample[,] grid, List<Vector2Int> toOccupy, int roomIndex)
     {
         if (grid == null || toOccupy == null)
             return false;
@@ -139,7 +139,7 @@ public static class GridParser
 
         // Any remaining points were unreachable.
         return remaining.Count == 0;
-    }
+    }*/
 
     private static bool IsValidPoint(Sample[,] grid, Vector2Int point)
     {
