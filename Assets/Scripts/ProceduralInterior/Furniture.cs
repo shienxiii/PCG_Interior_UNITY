@@ -23,6 +23,11 @@ namespace ProceduralInterior
         
         [SerializeField, Tooltip("Sample points around on furniture that needs to be reserved to ensure player can reach this object")]
         private List<Vector2Int> _reserves;
+        
+        #if UNITY_EDITOR
+        [SerializeField] private bool _drawDebug = false;
+        [SerializeField] private bool _debugDrawSpan = false;
+        #endif
 
         /// <summary>
         /// Get the required dimension to spawn this furniture.
@@ -107,11 +112,11 @@ namespace ProceduralInterior
             {
                 Vector2Int point = points[i];
                 
-                span.A.x = Math.Min(span.A.x, point.x);
-                span.A.y = Math.Min(span.A.y, point.y);
+                span.Min.x = Math.Min(span.Min.x, point.x);
+                span.Min.y = Math.Min(span.Min.y, point.y);
             
-                span.B.x = Math.Max(span.B.x, point.x);
-                span.B.y = Math.Max(span.B.y, point.y);
+                span.Max.x = Math.Max(span.Max.x, point.x);
+                span.Max.y = Math.Max(span.Max.y, point.y);
             }
 
             return span;
@@ -138,12 +143,16 @@ namespace ProceduralInterior
             DrawDebugSamples(reserves, Color.green, sampleSize);
             DrawDebugSamples(walkables, Color.cyan, sampleSize);
 
-            DrawDebugSample(span.A, Color.white, sampleSize);
-            DrawDebugSample(span.B, Color.black, sampleSize);
+            if (_debugDrawSpan)
+            {
+                DrawDebugSample(span.Min, Color.white, sampleSize);
+                DrawDebugSample(span.Max, Color.black, sampleSize);
+            }
         }
 
         private void DrawDebugSamples(List<Vector2Int> samples, Color debugColor, Vector3 sampleSize)
         {
+            if (!_drawDebug) return;
             Gizmos.color = debugColor;
 
             if (samples != null)

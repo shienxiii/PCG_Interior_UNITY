@@ -4,30 +4,30 @@ namespace ProceduralInterior.Types
 {
     // <summary>
     /// Holds 2 Vector2Int points which represents a grid's span.
-    /// Constructor will always ensure both x and y of vector A to be smaller than vector B
+    /// Constructor will always ensure both x and y of Min to be smaller than Max
     /// </summary>
     [System.Serializable]
     public struct GridSpan
     {
-        public Vector2Int A;
-        public Vector2Int B;
+        public Vector2Int Min;
+        public Vector2Int Max;
 
         public GridSpan(Vector2Int init)
         {
-            A = B = init;
+            Min = Max = init;
         }
-        public GridSpan(Vector2Int inA, Vector2Int inB)
+        public GridSpan(Vector2Int inMin, Vector2Int inMax)
         {
-            // ensure x and y in A is always smaller than B
+            // ensure x and y in Min is always smaller than Max
 
-            A = inA;
-            B = inB;
+            Min = inMin;
+            Max = inMax;
 
-            if (A.x > B.x) 
-                (B.x, A.x) = (A.x, B.x);
+            if (Min.x > Max.x) 
+                (Max.x, Min.x) = (Min.x, Max.x);
 
-            if (A.y > B.y)
-                (B.y, A.y) = (A.y, B.y);
+            if (Min.y > Max.y)
+                (Max.y, Min.y) = (Min.y, Max.y);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace ProceduralInterior.Types
         /// <returns></returns>
         public Vector2Int GetDimension()
         {
-            Vector2Int diff = B - A;
+            Vector2Int diff = Max - Min;
             return new Vector2Int(Mathf.Abs(diff.x) + 1, Mathf.Abs(diff.y) + 1);
         }
 
@@ -48,10 +48,10 @@ namespace ProceduralInterior.Types
 
         public bool Contains(Vector2Int point)
         {
-            return point.x >= Mathf.Min(A.x, B.x) &&
-                   point.x <= Mathf.Max(A.x, B.x) &&
-                   point.y >= Mathf.Min(A.y, B.y) &&
-                   point.y <= Mathf.Max(A.y, B.y);
+            return point.x >= Mathf.Min(Min.x, Max.x) &&
+                   point.x <= Mathf.Max(Min.x, Max.x) &&
+                   point.y >= Mathf.Min(Min.y, Max.y) &&
+                   point.y <= Mathf.Max(Min.y, Max.y);
         }
     }
 }

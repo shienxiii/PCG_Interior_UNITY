@@ -75,8 +75,8 @@ namespace ProceduralInterior.FunctionLib
 
             foreach (GridSpan space in inRoom.Spaces)
             {
-                Vector3 start = interior.GridPointToWorldPoint(space.A, false);
-                Vector3 end = interior.GridPointToWorldPoint(space.B, false) + new Vector3(sampleDimX, 0.0f, sampleDimX);
+                Vector3 start = interior.GridPointToWorldPoint(space.Min, false);
+                Vector3 end = interior.GridPointToWorldPoint(space.Max, false) + new Vector3(sampleDimX, 0.0f, sampleDimX);
                 Vector3 center = (start + end) / 2;
 
                 SpawnStructure(groundPrefab, space.GetDimension(), center);

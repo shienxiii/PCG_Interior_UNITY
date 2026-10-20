@@ -21,17 +21,17 @@ namespace ProceduralInterior
         private Vector3Range _span;
         private Sample[,] _grid;
         
-        private List<Room> _rooms     = new List<Room>();
-        private List<Border> _borders = new List<Border>();
-        private System.Random _roomRandom = null;
+        private List<Room> _rooms               = new List<Room>();
+        private List<Border> _borders           = new List<Border>();
+        private System.Random _roomRandom       = null;
         private System.Random _furnishingRandom = null;
 
         /*** PUBLIC PROPERTIES ***/
-        public System.Guid  AssetID => System.Guid.Parse(_assetID);
-        public Sample[,] Grid       => _grid;
-        public List<Room> Rooms     => _rooms;
-        public List<Border> Borders => _borders;
-        public System.Random RoomRandom => _roomRandom;
+        public System.Guid  AssetID           => System.Guid.Parse(_assetID);
+        public Sample[,] Grid                 => _grid;
+        public List<Room> Rooms               => _rooms;
+        public List<Border> Borders           => _borders;
+        public System.Random RoomRandom       => _roomRandom;
         public System.Random FurnishingRandom => _furnishingRandom;
 
         #if UNITY_EDITOR
@@ -44,6 +44,8 @@ namespace ProceduralInterior
             [SerializeField] private bool _drawWall          = false;
             [SerializeField] private bool _drawReserved      = false;
             [SerializeField] private bool _spawnStructures   = false;
+            
+            [SerializeField] private List<Furniture> _debugFurnitures;
         #endif
         
         /// <summary>
@@ -209,6 +211,12 @@ namespace ProceduralInterior
                     
                 if(_spawnStructures)
                     InteriorSpawner.SpawnStructures(this);
+
+                for (int i = 0; i < _rooms.Count; i++)
+                {
+                    Furniture prefab = SamplerHelperFunctions.GetRandomElement(_debugFurnitures, _furnishingRandom);
+                    RoomFurnisher.FurnishRoom(this, i, prefab);
+                }
             }
 
             private void DrawRoomDebug(ProceduralInteriorSettings settings)
@@ -222,8 +230,8 @@ namespace ProceduralInterior
                     if(_drawFloor)
                         foreach (GridSpan space in room.Spaces)
                         {
-                            Vector3 startPoint = GridPointToWorldPoint(space.A);
-                            Vector3 endPoint   = GridPointToWorldPoint(space.B);
+                            Vector3 startPoint = GridPointToWorldPoint(space.Min);
+                            Vector3 endPoint   = GridPointToWorldPoint(space.Max);
                             Vector3 center     = (startPoint + endPoint) / 2;
 
                             Vector2Int dimension = space.GetDimension();
@@ -297,6 +305,6 @@ namespace ProceduralInterior
                     _assetID = Guid.NewGuid().ToString();
                 }
             }
-#endif
+        #endif
     }
 }

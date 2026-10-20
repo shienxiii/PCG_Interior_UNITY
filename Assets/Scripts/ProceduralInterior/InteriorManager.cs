@@ -12,7 +12,7 @@ namespace ProceduralInterior
         private static InteriorManager _instance = null;
         private static ProceduralInteriorSettings _settings = null;
         private Dictionary<System.Guid, int> _interiorIndex;
-        public static System.Random _random = null;
+        private static System.Random _random = null;
         private static SerializableDictionary<Interior, int> _interiorMap;
 
         public static InteriorManager Instance => _instance;

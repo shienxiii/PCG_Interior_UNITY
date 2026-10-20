@@ -4,12 +4,13 @@ using System.Linq;
 using ProceduralInterior;
 using ProceduralInterior.FunctionLib;
 using ProceduralInterior.Types;
+using Unity.Mathematics;
 using UnityEngine;
 
 // Static class used to handle filling the room 
 public static class RoomFurnisher
 {
-    public static void FurnishRoom(Interior interior, int roomIndex, Furniture furniture)
+    public static void FurnishRoom(Interior interior, int roomIndex, Furniture inFurniture)
     {
         // for now only add 1 furniture for testing purpose
         if (!interior || interior.Rooms == null || roomIndex < 0 || roomIndex >= interior.Rooms.Count) return;
@@ -18,10 +19,11 @@ public static class RoomFurnisher
         System.Random random = interior.FurnishingRandom;
         
         // get a copy of the room spaces, we'll be editing this as we populate the room
-        List<GridSpan> spaces = interior.Rooms[roomIndex].Spaces.ToList();
+        Room room = interior.Rooms[roomIndex];
+        List<GridSpan> spaces = room.Spaces.ToList();
         
         // we want to get the furniture's dimension
-        Vector2Int furnitureDimension = furniture.GetDefaultDimension();
+        Vector2Int furnitureDimension = inFurniture.GetDefaultDimension();
         
         // filter out spaces that are unable to fit the furniture's span
         List<int> usableSpaces = GetUsableSpaceForDimension(spaces, furnitureDimension);
@@ -31,6 +33,7 @@ public static class RoomFurnisher
 
         // pick a random space
         int i = SamplerHelperFunctions.GetRandomElement(usableSpaces, random);
+        GridSpan space = spaces[i];
         Vector2Int spaceDim = spaces[i].GetDimension();
         
         // determine the rotations we can use for the furniture
@@ -52,13 +55,27 @@ public static class RoomFurnisher
         float yRotationEuler = SamplerHelperFunctions.GetRandomElement(plausibleRotation, random);
 
         // Calculate the required info to place this furniture
-        GridSpan span = furniture.GetGridSpaceWithRotation(yRotationEuler, out List<Vector2Int> occupies, out  List<Vector2Int> reserves, out List<Vector2Int> walkables);
-        Vector2Int furnitureDim = span.GetDimension();
+        GridSpan furnitureSpan = inFurniture.GetGridSpaceWithRotation(yRotationEuler, out List<Vector2Int> occupies, out  List<Vector2Int> reserves, out List<Vector2Int> walkables);
+        Vector2Int furnitureDim = furnitureSpan.GetDimension();
+        
+        // calculate the offset of span to figure out where 0,0 is offset from, which would be the negative of span.Min
+        Vector2Int spanOffset = furnitureSpan.Min * -1;
 
         // calculate how much space we can move the furniture around this space
-        Vector2Int moveSpace = spaceDim - furnitureDim;
+        Vector2Int moveSpace = spaceDim - furnitureDim + Vector2Int.one;
+        
+        // decide the offset to spawn the furniture, add (1, 1) during random.Next as maxValue is exclusive
+        Vector2Int offset = new Vector2Int(random.Next(moveSpace.x), random.Next(moveSpace.y));
+        
+        // calculate where the (0,0) of the furniture will be located
+        Vector2Int spawnPoint = space.Min + spanOffset + offset;
+        
+        // Calculate the transform
+        Vector3 position = interior.GridPointToWorldPoint(spawnPoint);
+        Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, yRotationEuler, 0.0f));
 
-
+        Furniture instance = GameObject.Instantiate(inFurniture, position, rotation);
+        room.AddFurniture(instance);
     }
 
     /// <summary>

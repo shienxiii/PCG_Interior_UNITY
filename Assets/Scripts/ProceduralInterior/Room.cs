@@ -16,21 +16,21 @@ namespace ProceduralInterior
         // Starting and ending grid point of the rectangle making up this room
         private GridSpan _span;
         
-        private List<GridSpan> _spaces       = new(); // collection of rectangles made up of all the samples of this room
-        private List<int> _borders           = new(); // indexes the border samples in owning Interior
-        private List<Wall> _walls            = new(); // walls making up and facing this room
-        private List<Vector2Int> _reserved   = new(); // indexes to samples within this room marked as reserved
-        private List<GameObject> _structures = new(); // GameObjects making up this Room, mainly the walls, floors and ceiling
-        private Dictionary<int, int> _doors  = new(); // KVP of all Rooms sharing a door marked border with this Room and index to that border
+        private List<GridSpan> _spaces           = new(); // collection of rectangles made up of all the samples of this room
+        private List<int> _borders               = new(); // indexes the border samples in owning Interior
+        private List<Wall> _walls                = new(); // walls making up and facing this room
+        private List<Vector2Int> _reserved       = new(); // indexes to samples within this room marked as reserved
+        private List<GameObject> _structures     = new(); // GameObjects making up this Room, mainly the walls, floors and ceiling
+        private Dictionary<int, int> _doorWalls  = new(); // Key: Index of next room | Value: wall index in owning Interior for the door
         
-        public Vector2Int Start           => _span.A;
-        public Vector2Int End             => _span.B;
+        public Vector2Int Start           => _span.Min;
+        public Vector2Int End             => _span.Max;
         public Vector2Int Dimension       => _span.GetDimension();
         public List<GridSpan> Spaces      => _spaces;
         public List<int> Borders          => _borders;
         public List<Wall> Walls           => _walls;
         public List<Vector2Int> Reserved  => _reserved;
-        public Dictionary<int, int> Doors => _doors;
+        public Dictionary<int, int> DoorWalls => _doorWalls;
 
         // Temporary Dictionary to the list of walls that can be converted to a door to another room
         // Key: Next room index | Value: Walls separating this room from the next room
@@ -93,9 +93,9 @@ namespace ProceduralInterior
 
         public bool AddDoor(int nextRoomIndex, int wallIndex)
         {
-            if (_doors.ContainsKey(nextRoomIndex)) return false;
+            if (_doorWalls.ContainsKey(nextRoomIndex)) return false;
 
-            _doors.Add(nextRoomIndex, wallIndex);
+            _doorWalls.Add(nextRoomIndex, wallIndex);
             return true;
         }
 
@@ -123,6 +123,11 @@ namespace ProceduralInterior
         public void AddStructures(List<GameObject> inStructures)
         {
             _structures.AddRange(inStructures);
+        }
+
+        public void AddFurniture(Furniture inStructure)
+        {
+            _structures.Add(inStructure.gameObject);
         }
 
         public void ClearStructures()

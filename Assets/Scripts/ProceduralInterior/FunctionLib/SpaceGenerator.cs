@@ -20,14 +20,14 @@ namespace ProceduralInterior.FunctionLib
                 Debug.Assert(area > 0, "CalculateRoomSpaces() -> GetLargestRectangleFromGrid() returned 0. This should not happen at this stage");
 
                 // set blocks covered by rect to false 
-                Vector2Int start = rect.A;
-                Vector2Int end = rect.B;
+                Vector2Int start = rect.Min;
+                Vector2Int end = rect.Max;
 
                 ArrayOperatorFunctions.MutateBlockOn2DArray(grid, false, start.x, end.x, start.y, end.y);
 
                 remaining -= rect.GetArea();
-                rect.A = room.RoomPointToInteriorPoint(rect.A);
-                rect.B = room.RoomPointToInteriorPoint(rect.B);
+                rect.Min = room.RoomPointToInteriorPoint(rect.Min);
+                rect.Max = room.RoomPointToInteriorPoint(rect.Max);
                 room.Spaces.Add(rect);
             }
 
