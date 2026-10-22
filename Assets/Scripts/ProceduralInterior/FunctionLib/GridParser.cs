@@ -5,7 +5,51 @@ using ProceduralInterior.Types;
 
 public static class GridParser
 {
-    /*public static bool CanOccupy(Sample[,] grid, List<Vector2Int> toOccupy, int roomIndex)
+    /// <summary>
+    /// Parse the provided grid to determine if the samples to parse
+    /// matches any of the provided SampleState on the whitelist as well as the room index
+    /// </summary>
+    /// <param name="grid"></param>
+    /// <param name="parsedSamples">index to the samples on the grid to check</param>
+    /// <param name="roomIndex">room index to match</param>
+    /// <param name="whitelist">SampleState(s) to match</param>
+    /// <returns></returns>
+    public static bool ParseSample_Whitelist(Sample[,] grid, List<Vector2Int> parsedSamples, int roomIndex, params SampleState[] whitelist)
+    {
+        if (grid == null || parsedSamples == null)
+            return false;
+
+        int width = grid.GetLength(0);
+        int height = grid.GetLength(1);
+
+        foreach (Vector2Int point in parsedSamples)
+        {
+            // Outside the grid.
+            if (point.x < 0 || point.x >= width ||
+                point.y < 0 || point.y >= height)
+                return false;
+            
+            Sample sample = grid[point.x, point.y];
+
+            // test that sample is valid and part of the provided roomIndex
+            if (sample == null || sample.RoomIndex != roomIndex)
+                return false;
+
+            bool whitelistMatch = false;
+
+            for (int i = 0; i < whitelist.Length && !whitelistMatch; i++)
+                if (sample.State == whitelist[i])
+                    whitelistMatch = true;
+
+            // any fail and we return false
+            if (!whitelistMatch)
+                return false;
+        }
+
+        return true;
+    }
+    
+    public static bool CanOccupy(Sample[,] grid, List<Vector2Int> toOccupy, int roomIndex)
     {
         if (grid == null || toOccupy == null)
             return false;
@@ -139,7 +183,7 @@ public static class GridParser
 
         // Any remaining points were unreachable.
         return remaining.Count == 0;
-    }*/
+    }
 
     private static bool IsValidPoint(Sample[,] grid, Vector2Int point)
     {

@@ -12,8 +12,7 @@ namespace ProceduralInterior
     /// </summary>
     public class Furniture : MonoBehaviour
     {
-        [SerializeField]
-        private GridSpan _span;
+        private GridSpan _blockSpan;
         
         [SerializeField, Tooltip("Sample points this furniture need to occupy, relative to this object's transform")]
         private List<Vector2Int> _occupy;
@@ -21,11 +20,14 @@ namespace ProceduralInterior
         [SerializeField, Tooltip("Sample points around this furniture to mark as walkable, preventing the points from being occupied while ensuring it's walkable.")]
         private List<Vector2Int> _walkables;
         
-        [SerializeField, Tooltip("Sample points around on furniture that needs to be reserved to ensure player can reach this object")]
+        [SerializeField, Tooltip("Sample points that needs to be reserved to ensure player can reach this object")]
         private List<Vector2Int> _reserves;
         
+        [SerializeField, Tooltip("Sample points that needs to be reserved to ensure player can reach this object, treated as non-path")]
+        private List<Vector2Int> _blockingReserves;
+        
         #if UNITY_EDITOR
-        [SerializeField] private bool _drawDebug = false;
+        [SerializeField] private bool _drawDebug = true;
         [SerializeField] private bool _debugDrawSpan = false;
         #endif
 
@@ -35,11 +37,11 @@ namespace ProceduralInterior
         /// Does not consider any rotation
         /// </summary>
         /// <returns>The span dimension consisting of both occupied and reserved samples</returns>
-        public Vector2Int GetDefaultDimension()
+        public Vector2Int GetBlockingDimension()
         {
             //NOTE: _span is calculated with a combination of _occupy and _reserves
             // we need to take up at least 1 dimension, so we'll get the dimension from _span as is
-            return _span.GetDimension();
+            return _blockSpan.GetDimension();
         }
 
         /// <summary>
@@ -47,33 +49,38 @@ namespace ProceduralInterior
         /// </summary>
         /// <param name="inPrefab">the furniture we're spawning</param>
         /// <param name="yRotationEuler">rotation to be applied on to the furniture</param>
-        /// <param name="outOccupies">list of points to mark as occupied</param>
-        /// <param name="outReserves">list of points to mark as reserved</param>
-        /// <param name="outWalkables">list of points to mark as walkable</param>
-        /// <returns>GridSpan that this furniture required to spawn</returns>
+        /// <param name="outOccupies">list of points to mark as OCCUPIED</param>
+        /// <param name="outWalkables">list of points to mark as WALKABLE</param>
+        /// <param name="outReserves">list of points to mark as RESERVED</param>
+        /// <param name="outBlockingReserves">list of points to mark as RESERVED_BLOCK</param>
+        /// <param name="offset">offset to apply to all return values</param>
+        /// <returns>Blocking span of this furniture</returns>
         public GridSpan GetGridSpaceWithRotation(float yRotationEuler,
                                                     out List<Vector2Int> outOccupies,
+                                                    out List<Vector2Int> outWalkables,
                                                     out List<Vector2Int> outReserves,
-                                                    out List<Vector2Int> outWalkables)
+                                                    out List<Vector2Int> outBlockingReserves)
         {
-            if (Mathf.Approximately(yRotationEuler % 360.0f, 0.0f))
+            /*if (Mathf.Approximately(yRotationEuler % 360.0f, 0.0f))
             {
-                outOccupies = _occupy;
-                outReserves = _reserves;
-                outWalkables = _walkables;
-                return _span;
-            }
+                outOccupies         = _occupy;
+                outWalkables        = _walkables;
+                outReserves         = _reserves;
+                outBlockingReserves = _blockingReserves;
+                return _blockSpan;
+            }*/
             
             float radians = yRotationEuler  * Mathf.Deg2Rad;
             
-            outOccupies = RotateOffsets(_occupy, radians);
-            outReserves = RotateOffsets(_reserves, radians);
-            outWalkables = RotateOffsets(_walkables, radians);
+            outOccupies         = RotateOffsets(_occupy, radians);
+            outWalkables        = RotateOffsets(_walkables, radians);
+            outReserves         = RotateOffsets(_reserves, radians);
+            outBlockingReserves = RotateOffsets(_blockingReserves, radians);
 
-            List<Vector2Int> requiredSamples = SamplerHelperFunctions.MergeLists(outOccupies, outReserves);
-            GridSpan requiredSpan = CalculateSpan(requiredSamples);
+            List<Vector2Int> blockPoints = SamplerHelperFunctions.MergeLists(outOccupies, outReserves, outBlockingReserves);
+            GridSpan blockSpan = CalculateSpan(blockPoints);
 
-            return requiredSpan;
+            return blockSpan;
         }
 
         private static List<Vector2Int> RotateOffsets(List<Vector2Int> offsets, float radians)
@@ -125,8 +132,8 @@ namespace ProceduralInterior
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            List<Vector2Int> samples = SamplerHelperFunctions.MergeLists(_occupy, _reserves);
-            _span = CalculateSpan(samples);
+            List<Vector2Int> samples = SamplerHelperFunctions.MergeLists(_occupy, _reserves, _blockingReserves);
+            _blockSpan = CalculateSpan(samples);
         }
 
         private void OnDrawGizmos()
@@ -137,11 +144,13 @@ namespace ProceduralInterior
             Vector3 sampleSize = new Vector3(settings.SampleDimension.x - 0.1f, 0.0f, settings.SampleDimension.x - 0.1f);
             float yRotationEuler = transform.rotation.eulerAngles.y;
             
-            GridSpan span = GetGridSpaceWithRotation(yRotationEuler, out List<Vector2Int> occupies, out  List<Vector2Int> reserves, out List<Vector2Int> walkables);
+            GridSpan span = GetGridSpaceWithRotation(yRotationEuler, out List<Vector2Int> occupies, out  List<Vector2Int> walkables,
+                                                        out List<Vector2Int> reserves, out List<Vector2Int> blockingReserves);
             
             DrawDebugSamples(occupies, Color.red, sampleSize);
-            DrawDebugSamples(reserves, Color.green, sampleSize);
             DrawDebugSamples(walkables, Color.cyan, sampleSize);
+            DrawDebugSamples(reserves, Color.green, sampleSize);
+            DrawDebugSamples(reserves, Color.yellow, sampleSize);
 
             if (_debugDrawSpan)
             {

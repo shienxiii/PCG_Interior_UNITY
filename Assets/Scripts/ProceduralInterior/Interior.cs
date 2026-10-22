@@ -45,7 +45,7 @@ namespace ProceduralInterior
             [SerializeField] private bool _drawReserved      = false;
             [SerializeField] private bool _spawnStructures   = false;
             
-            [SerializeField] private List<Furniture> _debugFurnitures;
+            [SerializeField] private RoomTheme _debugTheme;
         #endif
         
         /// <summary>
@@ -212,10 +212,9 @@ namespace ProceduralInterior
                 if(_spawnStructures)
                     InteriorSpawner.SpawnStructures(this);
 
-                for (int i = 0; i < _rooms.Count; i++)
+                for (int i = 0; i < _rooms.Count && _debugTheme != null; i++)
                 {
-                    Furniture prefab = SamplerHelperFunctions.GetRandomElement(_debugFurnitures, _furnishingRandom);
-                    RoomFurnisher.FurnishRoom(this, i, prefab);
+                    RoomFurnisher.FurnishRoom(this, i, _debugTheme);
                 }
             }
 
