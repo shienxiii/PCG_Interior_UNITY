@@ -19,6 +19,7 @@ Unityでプロシージャルな内装生成システムを作成するために
 5. **壁・床・天井などの構造データを最適化し、各サンプルごとにメッシュを生成するのではなく、複数のサンプルをまとめてメッシュを生成することで、生成するオブジェクト数を抑える**
 6. **静的なオブジェクトを配置して部屋が空間的に感じられないようにしつつ、重要な通路や移動経路を家具などで塞がないようにする**
 7. **将来的に異なるゲームプロジェクトに合わせて機能の追加やカスタマイズができる拡張性**
+8. **マルチプレイへの対応を想定した設計**. 生成したレベルをネットワーク経由で同期する際に必要となる情報をできるだけ少なくし、ネットワーク上で送受信するデータ量を抑えられるよう設計
 
 # レベルプロシージャル生成アルゴリズム概要（現在の実装状況）
 
@@ -36,6 +37,8 @@ UnityのSpline Componentをレベル全体の形状として使用し、その�
 
 ## 壁の最適化
 壁の向きや直線性をもとに壁のサンプルを統合し、生成する壁の数を減らすことで、メッシュ生成を効率化します。
+
+
 
 # Overview
 
@@ -58,6 +61,7 @@ The algorithm is designed with the following goals in mind:
 5. **Optimizing structural data for walls, floors, and ceilings** by combining multiple samples into larger sections rather than generating a mesh for every individual sample, reducing the number of objects that need to be generated
 6. **Furnishing rooms with static objects** to make spaces feel less empty while ensuring that furniture does not block important paths or traversal routes
 7. **Scalability and extensibility**, allowing the system to be expanded or customized for future game projects
+8. **Multiplayer and network-friendly design**, minimize the amount of information that needs to be replicated across the network when synchronizing the generated level, reducing the amount of data that needs to be transmitted.
 
 # Level Procedural Generation Algorithm (Current State)
 
