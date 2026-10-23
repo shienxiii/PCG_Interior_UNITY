@@ -26,68 +26,63 @@ public static class RoomFurnisher
         {
             if (!mPrefab) continue;
 
-            // Get the blocking dimension of the furniture
-            Vector2Int blockDim = mPrefab.GetBlockingDimension();
-            
-            // filter out spaces that are unable to fit the furniture's span
-            List<int> validSpaces = GetUsableSpaceForDimension(spaces, blockDim);
-            
-            if (validSpaces.Count == 0) continue; // PLACEHOLDER: for now, continue to next furniture if no valid spaces 
-            
-            // pick a random space
-            int i = SamplerHelperFunctions.GetRandomElement(validSpaces, random);
-
-            Furniture furnitureInst = TrySpawnInSpace(interior, roomIndex, mPrefab, spaces[i], random);
+            Furniture furnitureInst = TrySpawn(interior, roomIndex, mPrefab, spaces);
             
             if(furnitureInst)
                 room.AddFurniture(furnitureInst);
         }
     }
 
+    private static Furniture TrySpawn(Interior interior, int roomIndex, Furniture prefab, List<GridSpan> availableSpaces)
+    {
+        Vector2Int furnitureDim = prefab.GetBlockingDimension();
+            
+        // filter out spaces that are unable to fit the furniture
+        Dictionary<int, List<float>> validSpaces = FilterSpaceToFitDimension(availableSpaces, furnitureDim);
+        List<int> keys = validSpaces.Keys.ToList();
+        
+        if (validSpaces.Count == 0) return null;
+
+        // Try to spawn until successful or run out of space to test
+        while (keys.Count > 0)
+        {
+            int key = SamplerHelperFunctions.GetRandomElement(keys, interior.FurnishingRandom, true);
+
+            Furniture instance = TrySpawnInSpace(interior, roomIndex, prefab, availableSpaces[key], validSpaces[key]);
+            if (instance != null)
+                return instance;
+        }
+
+        return null;
+    }
+
     private static Furniture TrySpawnInSpace(Interior interior, int roomIndex,
                                         Furniture prefab, GridSpan space,
-                                        System.Random random)
+                                        List<float> plausibleRotations)
     {
         // null check not needed here as the caller should have checked beforehand
+        System.Random random = interior.FurnishingRandom;
+        
+        float yRotationEuler = SamplerHelperFunctions.GetRandomElement(plausibleRotations, random, true);
 
-        Vector2Int spaceDim = space.GetDimension();
-        // check plausible rotation we can use for the furniture
-        List<float> plausibleRotation = GetPlausibleRotations(spaceDim, prefab.GetBlockingDimension());
-        
-        // at this stage plausibleRotation will never be null or empty, and all values are valid to use without check
-        float yRotationEuler = SamplerHelperFunctions.GetRandomElement(plausibleRotation, random);
-        
         // Calculate the required span and samples placement to spawn the furniture with the selected rotation 
-        GridSpan furnitureSpan = prefab.GetGridSpaceWithRotation(yRotationEuler, out List<Vector2Int> occupies, out  List<Vector2Int> walkables, 
-                                                            out List<Vector2Int> reserves, out List<Vector2Int> blockingReserves);
+        GridSpan furnitureSpan = prefab.GetGridSpaceWithRotation(yRotationEuler,
+                                                                    out List<Vector2Int> occupies,
+                                                                    out  List<Vector2Int> walkables,
+                                                                    out List<Vector2Int> reserves,
+                                                                    out List<Vector2Int> blockingReserves);
+        
         Vector2Int furnitureDim = furnitureSpan.GetDimension();
         Vector2Int furnitureOffset = furnitureSpan.Min * -1; // where 0,0 is in furnitureSpan
         
         // calculate how much space we can move the furniture around this space
-        Vector2Int wiggleSpace = spaceDim - furnitureDim + Vector2Int.one;
+        Vector2Int wiggleSpace = space.GetDimension() - furnitureDim + Vector2Int.one;
         
         // decide the offset to spawn the furniture, add (1, 1) during random.Next as maxValue is exclusive
-        Vector2Int spawnOffset = new Vector2Int(random.Next(wiggleSpace.x), random.Next(wiggleSpace.y)) + space.Min;
+        Vector2Int spawnOffset = space.Min + new Vector2Int(random.Next(wiggleSpace.x), random.Next(wiggleSpace.y));
         
         // calculate where the (0,0) of the furniture will be located
         Vector2Int spawnPoint = spawnOffset + furnitureOffset;
-        
-        /*
-        // Offset the points retrieved to the spawn points
-        void OffsetPoints(List<Vector2Int> lists, Vector2Int offset)
-        {
-            for (int i = 0; i < lists.Count; i++)
-                lists[i] += offset;
-        }
-        
-        OffsetPoints(occupies, spawnPoint);
-        OffsetPoints(walkables, spawnPoint);
-        OffsetPoints(reserves, spawnPoint);
-        OffsetPoints(blockingReserves, spawnPoint);
-        
-        // check that occupies do not overlap any samples not labelled FREE
-        GridParser.ParseSample_Whitelist(interior.Grid, occupies, roomIndex, SampleState.FREE);
-        GridParser.ParseSample_Whitelist(interior.Grid, blockingReserves, roomIndex, SampleState.FREE);*/
         
         // Convert the sample states and do final check to make sure we're not blocking any path, if yes reverse changes
         
@@ -97,7 +92,30 @@ public static class RoomFurnisher
 
         return UnityEngine.Object.Instantiate(prefab, position, rotation);
     }
+    
+    /// <summary>
+    /// Get the index of the spaces that can fit the given span as well as the usable rotation
+    /// </summary>
+    /// <param name="inSpaces">list of spaces</param>
+    /// <param name="dimension">the dimension we're looking to git into the spaces</param>
+    /// <returns>index of the spaces that can fit the given span</returns>
+    private static Dictionary<int, List<float>> FilterSpaceToFitDimension(List<GridSpan> inSpaces, Vector2Int dimension)
+    {
+        Dictionary<int, List<float>> usableSpaces = new();
 
+        for (int i = 0; i < inSpaces.Count; i++)
+        {
+            Vector2Int spaceDim = inSpaces[i].GetDimension();
+
+            List<float> rotations = GetPlausibleRotations(spaceDim, dimension);
+
+            if(rotations is { Count: > 0 })
+                usableSpaces.Add(i, rotations);
+        }
+
+        return usableSpaces;
+    }
+    
     private static List<float> GetPlausibleRotations(Vector2Int spaceDim, Vector2Int furnitureDim)
     {
         List<float> plausibleRotation = new();
@@ -115,29 +133,6 @@ public static class RoomFurnisher
         }
 
         return plausibleRotation;
-    }
-    
-    /// <summary>
-    /// Get the index of the spaces that can fit the given span
-    /// </summary>
-    /// <param name="inSpaces">list of spaces</param>
-    /// <param name="dimension">the span we're looking to git into the spaces</param>
-    /// <returns>index of the spaces that can fit the given span</returns>
-    private static List<int> GetUsableSpaceForDimension(List<GridSpan> inSpaces, Vector2Int dimension)
-    {
-        List<int> usableSpace = new();
-
-        for (int i = 0; i < inSpaces.Count; i++)
-        {
-            Vector2Int spaceDim = inSpaces[i].GetDimension();
-
-            // we want to get any space that can fit the given span including if it's rotated 90-deg or 270-deg
-            if(CanFitInSpace(spaceDim, dimension) ||
-               CanFitInSpace(spaceDim, new Vector2Int(dimension.y, dimension.x)))
-                usableSpace.Add(i);
-        }
-
-        return usableSpace;
     }
 
     private static bool CanFitInSpace(Vector2Int spaceDimension, Vector2Int minDimension)

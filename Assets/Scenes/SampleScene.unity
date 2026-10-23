@@ -273,8 +273,7 @@ MonoBehaviour:
   _drawWall: 0
   _drawReserved: 0
   _spawnStructures: 1
-  _debugFurnitures:
-  - {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
+  _debugTheme: {fileID: 11400000, guid: 281e0a997b06dfb41b9a7d7d8d9417d0, type: 2}
 --- !u!114 &214482474
 MonoBehaviour:
   m_ObjectHideFlags: 0

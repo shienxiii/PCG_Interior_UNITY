@@ -16,11 +16,9 @@ MonoBehaviour:
   - Prefabs: {fileID: 6208365809100469107, guid: 2631848d382039c409341b755b7ed2f4, type: 3}
     MinRoomCount: 10
     MaxRoomCount: 15
-    RoomSizeOffset: 5
   - Prefabs: {fileID: 4906494016395526968, guid: a7f8f75cdbc9b4a4c99d92b188daf9e1, type: 3}
     MinRoomCount: 10
     MaxRoomCount: 15
-    RoomSizeOffset: 5
   _defaultGround:
     _prefab: {fileID: 1847223854238304986, guid: db6df5fd634570d4399c39263c1e2ff1, type: 3}
     _dimension: {x: 1, y: 1, z: 1}
@@ -38,10 +36,9 @@ MonoBehaviour:
     _dimension: {x: 0, y: 0, z: 0}
     _material: {fileID: 0}
   _sampleDimension: {x: 2, y: 3}
-  _minRoomCount: 5
-  _maxRoomCount: 10
+  _minRoomCount: 10
+  _maxRoomCount: 15
   _roomSizeOffset: 5
   _minSamplesPerRoom: 4
-  _offsetWallNormal: 0
   _offsetWallEndPoints: 1
   _offsetLength: 0.075
