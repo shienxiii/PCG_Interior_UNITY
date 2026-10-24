@@ -48,7 +48,7 @@ public static class RoomFurnisher
         {
             int key = SamplerHelperFunctions.GetRandomElement(keys, interior.FurnishingRandom, true);
 
-            Furniture instance = TrySpawnInSpace(interior, roomIndex, prefab, availableSpaces[key], validSpaces[key]);
+            Furniture instance = TrySpawnInSpace(interior, roomIndex, prefab, availableSpaces[key], validSpaces[key], interior.FurnishingRandom);
             if (instance != null)
                 return instance;
         }
@@ -58,11 +58,11 @@ public static class RoomFurnisher
 
     private static Furniture TrySpawnInSpace(Interior interior, int roomIndex,
                                         Furniture prefab, GridSpan space,
-                                        List<float> plausibleRotations)
+                                        List<float> plausibleRotations,
+                                        System.Random random)
     {
         // null check not needed here as the caller should have checked beforehand
-        System.Random random = interior.FurnishingRandom;
-        
+
         float yRotationEuler = SamplerHelperFunctions.GetRandomElement(plausibleRotations, random, true);
 
         // Calculate the required span and samples placement to spawn the furniture with the selected rotation 
@@ -73,7 +73,7 @@ public static class RoomFurnisher
                                                                     out List<Vector2Int> blockingReserves);
         
         Vector2Int furnitureDim = furnitureSpan.GetDimension();
-        Vector2Int furnitureOffset = furnitureSpan.Min * -1; // where 0,0 is in furnitureSpan
+        Vector2Int centerOffset = furnitureSpan.Min * -1; // where 0,0 is in furnitureSpan if we're offsetting from Min
         
         // calculate how much space we can move the furniture around this space
         Vector2Int wiggleSpace = space.GetDimension() - furnitureDim + Vector2Int.one;
@@ -82,17 +82,28 @@ public static class RoomFurnisher
         Vector2Int spawnOffset = space.Min + new Vector2Int(random.Next(wiggleSpace.x), random.Next(wiggleSpace.y));
         
         // calculate where the (0,0) of the furniture will be located
-        Vector2Int spawnPoint = spawnOffset + furnitureOffset;
+        Vector2Int spawnPoint = spawnOffset + centerOffset;
         
         // Convert the sample states and do final check to make sure we're not blocking any path, if yes reverse changes
         
         // Calculate the transform
         Vector3 position = interior.GridPointToWorldPoint(spawnPoint);
         Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, yRotationEuler, 0.0f));
+        
+        Furniture instance = UnityEngine.Object.Instantiate(prefab, position, rotation);
+        
+        // if we failed to spawn and we still have some rotation to test, try to spawn with another rotation
+        if (!instance && plausibleRotations.Count > 0)
+            instance = TrySpawnInSpace(interior, roomIndex, prefab, space, plausibleRotations, random);
 
-        return UnityEngine.Object.Instantiate(prefab, position, rotation);
+        return instance;
     }
-    
+
+    //
+    private static void RecalculateSpace(Sample[,] samples, GridSpan space)
+    {
+        
+    }
     /// <summary>
     /// Get the index of the spaces that can fit the given span as well as the usable rotation
     /// </summary>

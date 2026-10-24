@@ -39,7 +39,7 @@ namespace ProceduralInterior.FunctionLib
         /// </summary>
         /// <param name="grid"></param>
         /// <param name="outRect"></param>
-        /// <returns></returns>
+        /// <returns>area of rectangle</returns>
         public static int GetLargestRectangleFromGrid(bool[,] grid, out GridSpan outRect)
         {
             outRect = default;

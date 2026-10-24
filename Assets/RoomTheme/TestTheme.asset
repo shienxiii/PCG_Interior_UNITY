@@ -13,5 +13,7 @@ MonoBehaviour:
   m_Name: TestTheme
   m_EditorClassIdentifier: Assembly-CSharp::RoomTheme
   _main:
+  - {fileID: 4292557592896249035, guid: a11f03c76b5948946ae45c80ebe9dffb, type: 3}
+  - {fileID: 8457302300276248816, guid: 54fee35b341c0a44588fb6d3c238e9c1, type: 3}
   - {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
   _sub: []

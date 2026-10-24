@@ -54,15 +54,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37c60162f783af34e95ace028d47a9f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProceduralInterior.Furniture
-  _span:
-    Min: {x: 0, y: 0}
-    Max: {x: 1, y: 1}
   _occupy:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
   - {x: 0, y: 1}
   _walkables: []
   _reserves: []
+  _blockingReserves: []
+  _drawDebug: 0
   _debugDrawSpan: 0
 --- !u!1001 &1569371256887789336
 PrefabInstance:
