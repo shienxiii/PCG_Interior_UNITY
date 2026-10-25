@@ -19,7 +19,6 @@ namespace ProceduralInterior.Types
         public GridSpan(Vector2Int inMin, Vector2Int inMax)
         {
             // ensure x and y in Min is always smaller than Max
-
             Min = inMin;
             Max = inMax;
 

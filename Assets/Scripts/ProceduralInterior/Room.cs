@@ -22,7 +22,8 @@ namespace ProceduralInterior
         private List<Vector2Int> _reserved       = new(); // indexes to samples within this room marked as reserved
         private List<GameObject> _structures     = new(); // GameObjects making up this Room, mainly the walls, floors and ceiling
         private Dictionary<int, int> _doorWalls  = new(); // Key: Index of next room | Value: wall index in owning Interior for the door
-        
+
+        public GridSpan Span              => _span;
         public Vector2Int Start           => _span.Min;
         public Vector2Int End             => _span.Max;
         public Vector2Int Dimension       => _span.GetDimension();
