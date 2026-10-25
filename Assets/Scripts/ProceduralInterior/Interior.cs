@@ -12,8 +12,9 @@ namespace ProceduralInterior
     public class Interior : MonoBehaviour
     {
         // Asset ID
-        [SerializeField] private string _assetID;
-        
+        [SerializeField, HideInInspector] private string _id;
+        public Guid AssetID { get; private set; }
+
         // Components
         private SplineContainer _areas;
         
@@ -27,7 +28,7 @@ namespace ProceduralInterior
         private System.Random _furnishingRandom = null;
 
         /*** PUBLIC PROPERTIES ***/
-        public System.Guid  AssetID           => System.Guid.Parse(_assetID);
+        public string ID                      => _id;
         public Sample[,] Grid                 => _grid;
         public List<Room> Rooms               => _rooms;
         public List<Border> Borders           => _borders;
@@ -47,7 +48,12 @@ namespace ProceduralInterior
             
             [SerializeField] private RoomTheme _debugTheme;
         #endif
-        
+
+        private void Awake()
+        {
+            AssetID = Guid.Parse(_id);
+        }
+
         /// <summary>
         /// Sample the grid based on the selected spline and generate the interior layout, rooms, and walls
         /// </summary>
@@ -298,10 +304,10 @@ namespace ProceduralInterior
 
             private void OnValidate()
             {
-                if (!Guid.TryParse(_assetID, out Guid test))
+                if (!Guid.TryParse(_id, out Guid test))
                 {
                     Debug.Log($"{gameObject.name} Invalid Asset ID, assigning new ID");
-                    _assetID = Guid.NewGuid().ToString();
+                    _id = Guid.NewGuid().ToString();
                 }
             }
         #endif

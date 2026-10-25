@@ -72,7 +72,7 @@ namespace ProceduralInterior
 
         private void CacheInteriorSettingsIndex()
         {
-            // We want to cache the Interior assets to the index that corresponds to InteriorSettings._settings
+            /*// We want to cache the Interior assets to the index that corresponds to InteriorSettings._settings
             if(!_settings)
                 _settings = ProceduralInteriorSettings.TryGetSettings();
 
@@ -84,7 +84,7 @@ namespace ProceduralInterior
             List<InteriorSettings> intSettings = _settings.Interior;
 
             for (int i = 0; i < intSettings.Count; i++)
-                _interiorIndex.Add(intSettings[i].Prefabs.AssetID, i);
+                _interiorIndex.Add(intSettings[i].Prefabs.AssetID, i);*/
         }
     }
 }
