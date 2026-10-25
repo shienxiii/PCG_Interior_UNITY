@@ -11,6 +11,15 @@ namespace ProceduralInterior.Types
         public int MinRoomCount;
         public int MaxRoomCount;
 
+        public static InteriorSettings Null => new InteriorSettings(null, 0, 0);
+
+        InteriorSettings(Interior inPrefab, int inMin, int inMax)
+        {
+            Prefabs = inPrefab;
+            MinRoomCount = inMin;
+            MaxRoomCount = inMax;
+        }
+
         public void OnAfterDeserialize()
         {
             if (MinRoomCount == 0) MinRoomCount = 10;

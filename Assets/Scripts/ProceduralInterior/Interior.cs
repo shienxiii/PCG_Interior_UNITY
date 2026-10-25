@@ -51,6 +51,7 @@ namespace ProceduralInterior
 
         private void Awake()
         {
+            Debug.Log("init asset id");
             AssetID = Guid.Parse(_id);
         }
 

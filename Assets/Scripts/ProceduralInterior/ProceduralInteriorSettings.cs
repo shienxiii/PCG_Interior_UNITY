@@ -47,6 +47,16 @@ namespace ProceduralInterior
             ProceduralInteriorSettings setting = (ProceduralInteriorSettings)Resources.Load(_subDir + _asset);
             return setting;
         }
+
+        public static InteriorSettings TryGetInteriorSettings(int inIndex)
+        {
+            ProceduralInteriorSettings settings = TryGetSettings();
+            
+            if (settings || inIndex < 0 || inIndex >= settings.Interior.Count) return InteriorSettings.Null;
+
+            return settings.Interior[inIndex];
+        }
+        
         #endregion
 
 #if (UNITY_EDITOR)
