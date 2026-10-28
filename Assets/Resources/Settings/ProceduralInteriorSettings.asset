@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProceduralInteriorSettings
   _interiors:
   - Prefabs: {fileID: 6208365809100469107, guid: 2631848d382039c409341b755b7ed2f4, type: 3}
-    MinRoomCount: 10
-    MaxRoomCount: 15
+    MinRoomCount: 15
+    MaxRoomCount: 20
   - Prefabs: {fileID: 4906494016395526968, guid: a7f8f75cdbc9b4a4c99d92b188daf9e1, type: 3}
     MinRoomCount: 10
     MaxRoomCount: 15

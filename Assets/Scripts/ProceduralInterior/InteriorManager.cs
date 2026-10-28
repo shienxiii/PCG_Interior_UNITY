@@ -70,9 +70,9 @@ namespace ProceduralInterior
             _random = new System.Random(seed);
         }
 
-        public void GetInteriorSettingsFor(System.Guid inAssetID)
+        public static InteriorSettings GetInteriorSettingsFor(System.Guid inAssetID)
         {
-            ProceduralInteriorSettings.TryGetInteriorSettings(_interiorIndex[inAssetID]);
+            return ProceduralInteriorSettings.TryGetInteriorSettings(Instance._interiorIndex[inAssetID]);
         }
 
         private void CacheInteriorSettingsIndex()
@@ -89,7 +89,7 @@ namespace ProceduralInterior
             List<InteriorSettings> intSettings = _settings.Interior;
 
             for (int i = 0; i < intSettings.Count; i++)
-                _interiorIndex.Add(Guid.Parse(intSettings[i].Prefabs.ID), i);
+                _interiorIndex.Add(intSettings[i].Prefabs.ID, i);
         }
     }
 }

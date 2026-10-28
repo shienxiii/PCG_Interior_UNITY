@@ -22,7 +22,10 @@ namespace ProceduralInterior.FunctionLib
                 !settings || (interior.Grid?.Length ?? 0) == 0
                 || validSamples.Count == 0) return;
 
-            int roomCount = interior.RoomRandom.Next(settings.MinRoomCount, settings.MaxRoomCount + 1);
+            // get the settings to determine number of rooms
+            InteriorSettings intSettings = InteriorManager.GetInteriorSettingsFor(interior.ID);
+
+            int roomCount = interior.RoomRandom.Next(intSettings.MinRoomCount, intSettings.MaxRoomCount + 1);
             int roomSizeOffset = Mathf.Abs(settings.RoomSizeOffset);
 
             // We want to cache the room samples before creating the Room objects

@@ -50,7 +50,15 @@ public static class RoomFurnisher
 
             Furniture instance = TrySpawnInSpace(interior, roomIndex, prefab, availableSpaces[key], validSpaces[key], interior.FurnishingRandom);
             if (instance != null)
+            {
+                // recalculate the space and append to availableSpaces
+
+
+                // remove the space used from availableSpaces
+                availableSpaces.RemoveAt(key);
+                
                 return instance;
+            }
         }
 
         return null;

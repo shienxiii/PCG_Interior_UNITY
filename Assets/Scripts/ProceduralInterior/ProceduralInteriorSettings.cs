@@ -17,8 +17,6 @@ namespace ProceduralInterior
 
         [Header("Sampler Settings")]
         [SerializeField] private Vector2 _sampleDimension = new Vector2(2.0f, 3.0f);
-        [SerializeField] private int _minRoomCount = 5;
-        [SerializeField] private int _maxRoomCount = 10;
         [SerializeField] private int _roomSizeOffset = 5;
         [SerializeField] private int _minSamplesPerRoom = 4;
         [SerializeField] private bool _offsetWallEndPoints = true;
@@ -31,8 +29,6 @@ namespace ProceduralInterior
         public RoomPrefab DefaultCeiling => _defaultCeiling;
         
         public Vector2 SampleDimension => _sampleDimension;
-        public int MinRoomCount => _minRoomCount;
-        public int MaxRoomCount => _maxRoomCount;
         public int RoomSizeOffset => _roomSizeOffset;
         public int MinSamplesPerRoom => _minSamplesPerRoom;
         public bool OffsetWallEndPoints => _offsetWallEndPoints;
@@ -51,9 +47,11 @@ namespace ProceduralInterior
         public static InteriorSettings TryGetInteriorSettings(int inIndex)
         {
             ProceduralInteriorSettings settings = TryGetSettings();
+            Debug.Log("Try find");
             
-            if (settings || inIndex < 0 || inIndex >= settings.Interior.Count) return InteriorSettings.Null;
+            if (!settings || inIndex < 0 || inIndex >= settings.Interior.Count) return InteriorSettings.Null;
 
+            Debug.Log("Return found settings");
             return settings.Interior[inIndex];
         }
         
@@ -107,8 +105,6 @@ namespace ProceduralInterior
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_defaultCeiling"), new GUIContent("Default Ceiling"));
                     
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_sampleDimension"), new GUIContent("Sample Dimension"));
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("_minRoomCount"), new GUIContent("Min Room Count"));
-                    EditorGUILayout.PropertyField(serializedObject.FindProperty("_maxRoomCount"), new GUIContent("Max Room Count"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_roomSizeOffset"), new GUIContent("Offset"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_minSamplesPerRoom"), new GUIContent("MinSamplesPerRoom"));
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("_offsetWallEndPoints"), new GUIContent("Offset Wall End Points"));
