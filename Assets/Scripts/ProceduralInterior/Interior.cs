@@ -12,7 +12,7 @@ namespace ProceduralInterior
     public class Interior : MonoBehaviour
     {
         // Asset ID
-        [SerializeField] private string _id;
+        [SerializeField] private string _assetID;
 
         // Components
         private SplineContainer _areas;
@@ -27,7 +27,7 @@ namespace ProceduralInterior
         private System.Random _furnishingRandom = null;
 
         /*** PUBLIC PROPERTIES ***/
-        public System.Guid ID                 => System.Guid.Parse(_id);
+        public System.Guid AssetID                 => System.Guid.Parse(_assetID);
         public Sample[,] Grid                 => _grid;
         public List<Room> Rooms               => _rooms;
         public List<Border> Borders           => _borders;
@@ -298,10 +298,10 @@ namespace ProceduralInterior
 
             private void OnValidate()
             {
-                if (!Guid.TryParse(_id, out Guid test))
+                if (!Guid.TryParse(_assetID, out Guid test))
                 {
                     Debug.Log($"{gameObject.name} Invalid Asset ID, assigning new ID");
-                    _id = Guid.NewGuid().ToString();
+                    _assetID = Guid.NewGuid().ToString();
                 }
             }
         #endif

@@ -89,7 +89,7 @@ namespace ProceduralInterior
             List<InteriorSettings> intSettings = _settings.Interior;
 
             for (int i = 0; i < intSettings.Count; i++)
-                _interiorIndex.Add(intSettings[i].Prefabs.ID, i);
+                _interiorIndex.Add(intSettings[i].Prefabs.AssetID, i);
         }
     }
 }

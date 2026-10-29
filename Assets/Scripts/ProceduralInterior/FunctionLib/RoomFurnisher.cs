@@ -52,10 +52,18 @@ public static class RoomFurnisher
             if (instance != null)
             {
                 // recalculate the space and append to availableSpaces
-
+                List<GridSpan> remainingSpace = SpaceGenerator.GetSpacesInSpan(interior.Grid,
+                                                                                availableSpaces[key],
+                                                                                roomIndex,
+                                                                                SampleState.FREE,
+                                                                                SampleState.RESERVED,
+                                                                                SampleState.WALKABLE);
 
                 // remove the space used from availableSpaces
                 availableSpaces.RemoveAt(key);
+                
+                // add remainingSpaces to availableSpaces
+                availableSpaces.AddRange(remainingSpace);
                 
                 return instance;
             }
@@ -70,13 +78,14 @@ public static class RoomFurnisher
                                         System.Random random)
     {
         // null check not needed here as the caller should have checked beforehand
-
+        Sample[,] grid = interior.Grid;
+        
         float yRotationEuler = SamplerHelperFunctions.GetRandomElement(plausibleRotations, random, true);
 
         // Calculate the required span and samples placement to spawn the furniture with the selected rotation 
         GridSpan furnitureSpan = prefab.GetGridSpaceWithRotation(yRotationEuler,
                                                                     out List<Vector2Int> occupies,
-                                                                    out  List<Vector2Int> walkables,
+                                                                    out List<Vector2Int> walkables,
                                                                     out List<Vector2Int> reserves,
                                                                     out List<Vector2Int> blockingReserves);
         
@@ -92,6 +101,18 @@ public static class RoomFurnisher
         // calculate where the (0,0) of the furniture will be located
         Vector2Int spawnPoint = spawnOffset + centerOffset;
         
+        // check if furniture space will overlap any important samples
+        
+        // occupies should only overlap free samples
+        bool occupyCheck = GridParser.ParseWhitelistedSamplesWithOffset(grid, occupies, spawnPoint, roomIndex, SampleState.FREE);
+        // reserve can overlap other reserves and walkables
+        bool reserveCheck = GridParser.ParseWhitelistedSamplesWithOffset(grid, reserves, spawnPoint, roomIndex, SampleState.FREE, SampleState.RESERVED, SampleState.WALKABLE);
+        // blocking reserves have the same restriction as occupies
+        bool bReserveCheck = GridParser.ParseWhitelistedSamplesWithOffset(grid, blockingReserves, spawnPoint, roomIndex, SampleState.FREE);
+
+        // don't spawn if overlap check fails
+        if (!occupyCheck || !reserveCheck || !bReserveCheck) return null;
+        
         // Convert the sample states and do final check to make sure we're not blocking any path, if yes reverse changes
         
         // Calculate the transform
@@ -99,7 +120,8 @@ public static class RoomFurnisher
         Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, yRotationEuler, 0.0f));
         
         Furniture instance = UnityEngine.Object.Instantiate(prefab, position, rotation);
-        
+
+
         // if we failed to spawn and we still have some rotation to test, try to spawn with another rotation
         if (!instance && plausibleRotations.Count > 0)
             instance = TrySpawnInSpace(interior, roomIndex, prefab, space, plausibleRotations, random);

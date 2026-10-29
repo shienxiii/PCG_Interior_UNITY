@@ -7,47 +7,81 @@ namespace ProceduralInterior.FunctionLib
     public static class GridParser
     {
         /// <summary>
-        /// Parse the provided grid to determine if the samples to parse
-        /// matches any of the provided SampleState on the whitelist as well as the room index
+        /// Parse the given grid with a list of samples to ensure
+        /// they match the given roomIndex and match one of the provided states
         /// </summary>
-        /// <param name="grid"></param>
-        /// <param name="parsedSamples">index to the samples on the grid to check</param>
+        /// <param name="grid">grid to parse</param>
+        /// <param name="whitelist">sample point to parse</param>
         /// <param name="roomIndex">room index to match</param>
-        /// <param name="whitelist">SampleState(s) to match</param>
-        /// <returns></returns>
-        public static bool ParseSample_Whitelist(Sample[,] grid, List<Vector2Int> parsedSamples, int roomIndex,
-            params SampleState[] whitelist)
+        /// <param name="statesToMatch">states to match</param>
+        /// <returns>false if any mismatch is detected, true if all check passed</returns>
+        public static bool ParseWhitelistedSamples(Sample[,] grid, List<Vector2Int> whitelist,
+                                                    int roomIndex, params SampleState[] statesToMatch)
         {
-            if (grid == null || parsedSamples == null)
-                return false;
+            if (grid == null || whitelist == null) return false;
 
-            int width = grid.GetLength(0);
-            int height = grid.GetLength(1);
-
-            foreach (Vector2Int point in parsedSamples)
+            foreach (Vector2Int point in whitelist)
             {
-                // Outside the grid.
-                if (point.x < 0 || point.x >= width ||
-                    point.y < 0 || point.y >= height)
-                    return false;
+                // check if within grid and not null
+                if (!IsValidPoint(grid, point)) return false;
 
                 Sample sample = grid[point.x, point.y];
 
-                // test that sample is valid and part of the provided roomIndex
-                if (sample == null || sample.RoomIndex != roomIndex)
-                    return false;
+                if (sample.RoomIndex != roomIndex) return false;
 
-                bool whitelistMatch = false;
+                bool matchFound = false;
+                foreach (SampleState state in statesToMatch)
+                {
+                    matchFound = state == sample.State;
+                    
+                    if(matchFound)
+                        break;
+                }
 
-                for (int i = 0; i < whitelist.Length && !whitelistMatch; i++)
-                    if (sample.State == whitelist[i])
-                        whitelistMatch = true;
-
-                // any fail and we return false
-                if (!whitelistMatch)
-                    return false;
+                if (!matchFound) return false;
             }
+            
+            return true;
+        }
 
+        /// <summary>
+        /// Parse the given grid with a list of samples with a an additional offset applied
+        /// to ensure they match the given roomIndex and match one of the provided states.
+        /// </summary>
+        /// <param name="grid">grid to parse</param>
+        /// <param name="whitelist">sample point to parse</param>
+        /// <param name="constOffset"></param>
+        /// <param name="roomIndex">room index to match</param>
+        /// <param name="statesToMatch">states to match</param>
+        /// <returns>false if any mismatch is detected, true if all check passed</returns>
+        public static bool ParseWhitelistedSamplesWithOffset(Sample[,] grid, List<Vector2Int> whitelist, Vector2Int constOffset,
+                                                                int roomIndex, params SampleState[] statesToMatch)
+        {
+            if (grid == null || whitelist == null) return false;
+
+            foreach (Vector2Int p in whitelist)
+            {
+                Vector2Int point = p + constOffset;
+                
+                // check if within grid and not null
+                if (!IsValidPoint(grid, point)) return false;
+
+                Sample sample = grid[point.x, point.y];
+
+                if (sample.RoomIndex != roomIndex) return false;
+
+                bool matchFound = false;
+                foreach (SampleState state in statesToMatch)
+                {
+                    matchFound = state == sample.State;
+                    
+                    if(matchFound)
+                        break;
+                }
+
+                if (!matchFound) return false;
+            }
+            
             return true;
         }
 

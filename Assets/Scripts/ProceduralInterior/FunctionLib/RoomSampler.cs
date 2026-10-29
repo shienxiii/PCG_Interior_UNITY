@@ -23,7 +23,7 @@ namespace ProceduralInterior.FunctionLib
                 || validSamples.Count == 0) return;
 
             // get the settings to determine number of rooms
-            InteriorSettings intSettings = InteriorManager.GetInteriorSettingsFor(interior.ID);
+            InteriorSettings intSettings = InteriorManager.GetInteriorSettingsFor(interior.AssetID);
 
             int roomCount = interior.RoomRandom.Next(intSettings.MinRoomCount, intSettings.MaxRoomCount + 1);
             int roomSizeOffset = Mathf.Abs(settings.RoomSizeOffset);

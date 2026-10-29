@@ -10,6 +10,10 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2d13e1d0272a48939db0df2b39041de120ce00/2f/b3fccefe/Object.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2d13e1d0272a48939db0df2b39041de120ce00/62/4de5e2c4/EntityId.cs" root0="SKIP_HIGHLIGHTING" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -71,7 +75,8 @@
       <updated>1792949390909</updated>
       <workItem from="1792949398031" duration="15000" />
       <workItem from="1792949875500" duration="3301000" />
-      <workItem from="1793095218439" duration="6732000" />
+      <workItem from="1793095218439" duration="11618000" />
+      <workItem from="1793270958288" duration="4123000" />
     </task>
     <servers />
   </component>
