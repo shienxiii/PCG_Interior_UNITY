@@ -29,6 +29,7 @@ namespace ProceduralInterior
         #if UNITY_EDITOR
         [SerializeField] private bool _drawDebug = true;
         [SerializeField] private bool _debugDrawSpan = false;
+        [SerializeField] private bool _debugDrawSpan2 = false;
         #endif
 
         /// <summary>
@@ -47,93 +48,34 @@ namespace ProceduralInterior
         /// <summary>
         /// Calculate the grid point of this Furniture with rotation applied
         /// </summary>
-        /// <param name="inPrefab">the furniture we're spawning</param>
-        /// <param name="yRotationEuler">rotation to be applied on to the furniture</param>
+        /// <param name="rotation">rotation to be applied on to the furniture</param>
         /// <param name="outOccupies">list of points to mark as OCCUPIED</param>
         /// <param name="outWalkables">list of points to mark as WALKABLE</param>
         /// <param name="outReserves">list of points to mark as RESERVED</param>
         /// <param name="outBlockingReserves">list of points to mark as RESERVED_BLOCK</param>
-        /// <param name="offset">offset to apply to all return values</param>
         /// <returns>Blocking span of this furniture</returns>
-        public GridSpan GetGridSpaceWithRotation(float yRotationEuler,
+        public GridSpan GetGridSpaceWithRotation(int rotation,
                                                     out List<Vector2Int> outOccupies,
                                                     out List<Vector2Int> outWalkables,
                                                     out List<Vector2Int> outReserves,
                                                     out List<Vector2Int> outBlockingReserves)
         {
-            /*if (Mathf.Approximately(yRotationEuler % 360.0f, 0.0f))
-            {
-                outOccupies         = _occupy;
-                outWalkables        = _walkables;
-                outReserves         = _reserves;
-                outBlockingReserves = _blockingReserves;
-                return _blockSpan;
-            }*/
-            
-            float radians = yRotationEuler  * Mathf.Deg2Rad;
-            
-            outOccupies         = RotateOffsets(_occupy, radians);
-            outWalkables        = RotateOffsets(_walkables, radians);
-            outReserves         = RotateOffsets(_reserves, radians);
-            outBlockingReserves = RotateOffsets(_blockingReserves, radians);
+            outOccupies         = GridMathLibrary.RotateOffsets(rotation, _occupy);
+            outWalkables        = GridMathLibrary.RotateOffsets(rotation, _walkables);
+            outReserves         = GridMathLibrary.RotateOffsets(rotation, _reserves);
+            outBlockingReserves = GridMathLibrary.RotateOffsets(rotation, _blockingReserves);
 
             List<Vector2Int> blockPoints = SamplerHelperFunctions.MergeLists(outOccupies, outReserves, outBlockingReserves);
-            GridSpan blockSpan = CalculateSpan(blockPoints);
+            GridSpan blockSpan = new GridSpan(blockPoints);
 
             return blockSpan;
-        }
-
-        private static List<Vector2Int> RotateOffsets(List<Vector2Int> offsets, float radians)
-        {
-            List<Vector2Int> spawnOffset = new();
-            
-            // Calculate standard sin and cos
-            float cos = Mathf.Cos(radians);
-            float sin = Mathf.Sin(radians);
-
-            foreach (Vector2Int offset in offsets)
-            {
-                int newX = Mathf.RoundToInt(offset.x * cos + offset.y * sin);
-                int newY = Mathf.RoundToInt(-offset.x * sin + offset.y * cos);
-                
-                spawnOffset.Add(new Vector2Int(newX, newY));
-            }
-
-            return spawnOffset;
-        }
-
-        /// <summary>
-        /// Calculate and return the span of the samples provided
-        /// </summary>
-        /// <param name="points">points we're calculating the span for</param>
-        /// <param name="span">The GridSpan dimension covering all the given points</param>
-        /// <returns>The GridSpan dimension covering all the given points. If empty will return a 1x1 GridSpan of (0,0)</returns>
-        public static GridSpan CalculateSpan(List<Vector2Int> points)
-        {
-            if (points == null || points.Count == 0)
-                return new GridSpan(Vector2Int.zero);
-
-            GridSpan span = new GridSpan(points[0]);
-
-            for (int i = 1; i < points.Count; i++)
-            {
-                Vector2Int point = points[i];
-                
-                span.Min.x = Math.Min(span.Min.x, point.x);
-                span.Min.y = Math.Min(span.Min.y, point.y);
-            
-                span.Max.x = Math.Max(span.Max.x, point.x);
-                span.Max.y = Math.Max(span.Max.y, point.y);
-            }
-
-            return span;
         }
         
 #if UNITY_EDITOR
         private void OnValidate()
         {
             List<Vector2Int> samples = SamplerHelperFunctions.MergeLists(_occupy, _reserves, _blockingReserves);
-            _blockSpan = CalculateSpan(samples);
+            _blockSpan = new GridSpan(samples);
         }
 
         private void OnDrawGizmos()
@@ -142,7 +84,7 @@ namespace ProceduralInterior
             if (!settings) return;
 
             Vector3 sampleSize = new Vector3(settings.SampleDimension.x - 0.1f, 0.0f, settings.SampleDimension.x - 0.1f);
-            float yRotationEuler = transform.rotation.eulerAngles.y;
+            int yRotationEuler = (int)(transform.rotation.eulerAngles.y + 0.1);
             
             GridSpan span = GetGridSpaceWithRotation(yRotationEuler, out List<Vector2Int> occupies, out  List<Vector2Int> walkables,
                                                         out List<Vector2Int> reserves, out List<Vector2Int> blockingReserves);
@@ -156,6 +98,14 @@ namespace ProceduralInterior
             {
                 DrawDebugSample(span.Min, Color.white, sampleSize);
                 DrawDebugSample(span.Max, Color.black, sampleSize);
+            }
+
+            if (_debugDrawSpan2)
+            {
+                GridSpan sp = GridMathLibrary.RotateSpan((int)(yRotationEuler), _blockSpan);
+                
+                DrawDebugSample(sp.Min, Color.deepPink, sampleSize);
+                DrawDebugSample(sp.Max, Color.purple, sampleSize);
             }
         }
 

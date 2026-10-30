@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ProceduralInterior.Types
@@ -27,6 +29,27 @@ namespace ProceduralInterior.Types
 
             if (Min.y > Max.y)
                 (Max.y, Min.y) = (Min.y, Max.y);
+        }
+
+        public GridSpan(ICollection<Vector2Int> points)
+        {
+            if (points.Count == 0)
+            {
+                Min = Max = Vector2Int.zero;
+                return;
+            }
+            
+            Min = Max = points.First();
+
+            foreach (Vector2Int point in points)
+            {
+                Min.x = Mathf.Min(point.x, Min.x);
+                Min.y = Mathf.Min(point.y, Min.y);
+                
+                Max.x = Mathf.Max(point.x, Max.x);
+                Max.y = Mathf.Max(point.y, Max.y);
+
+            }
         }
 
         /// <summary>

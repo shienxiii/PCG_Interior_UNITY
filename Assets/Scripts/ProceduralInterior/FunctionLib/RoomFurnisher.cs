@@ -38,7 +38,7 @@ public static class RoomFurnisher
         Vector2Int furnitureDim = prefab.GetBlockingDimension();
             
         // filter out spaces that are unable to fit the furniture
-        Dictionary<int, List<float>> validSpaces = FilterSpaceToFitDimension(availableSpaces, furnitureDim);
+        Dictionary<int, List<int>> validSpaces = FilterSpaceToFitDimension(availableSpaces, furnitureDim);
         List<int> keys = validSpaces.Keys.ToList();
         
         if (validSpaces.Count == 0) return null;
@@ -74,13 +74,13 @@ public static class RoomFurnisher
 
     private static Furniture TrySpawnInSpace(Interior interior, int roomIndex,
                                         Furniture prefab, GridSpan space,
-                                        List<float> plausibleRotations,
+                                        List<int> plausibleRotations,
                                         System.Random random)
     {
         // null check not needed here as the caller should have checked beforehand
         Sample[,] grid = interior.Grid;
         
-        float yRotationEuler = SamplerHelperFunctions.GetRandomElement(plausibleRotations, random, true);
+        int yRotationEuler = SamplerHelperFunctions.GetRandomElement(plausibleRotations, random, true);
 
         // Calculate the required span and samples placement to spawn the furniture with the selected rotation 
         GridSpan furnitureSpan = prefab.GetGridSpaceWithRotation(yRotationEuler,
@@ -140,15 +140,15 @@ public static class RoomFurnisher
     /// <param name="inSpaces">list of spaces</param>
     /// <param name="dimension">the dimension we're looking to git into the spaces</param>
     /// <returns>index of the spaces that can fit the given span</returns>
-    private static Dictionary<int, List<float>> FilterSpaceToFitDimension(List<GridSpan> inSpaces, Vector2Int dimension)
+    private static Dictionary<int, List<int>> FilterSpaceToFitDimension(List<GridSpan> inSpaces, Vector2Int dimension)
     {
-        Dictionary<int, List<float>> usableSpaces = new();
+        Dictionary<int, List<int>> usableSpaces = new();
 
         for (int i = 0; i < inSpaces.Count; i++)
         {
             Vector2Int spaceDim = inSpaces[i].GetDimension();
 
-            List<float> rotations = GetPlausibleRotations(spaceDim, dimension);
+            List<int> rotations = GetPlausibleRotations(spaceDim, dimension);
 
             if(rotations is { Count: > 0 })
                 usableSpaces.Add(i, rotations);
@@ -157,20 +157,20 @@ public static class RoomFurnisher
         return usableSpaces;
     }
     
-    private static List<float> GetPlausibleRotations(Vector2Int spaceDim, Vector2Int furnitureDim)
+    private static List<int> GetPlausibleRotations(Vector2Int spaceDim, Vector2Int furnitureDim)
     {
-        List<float> plausibleRotation = new();
+        List<int> plausibleRotation = new();
         
         if (CanFitInSpace(spaceDim, furnitureDim))
         {
-            plausibleRotation.Add(0.0f);
-            plausibleRotation.Add(180.0f);
+            plausibleRotation.Add(0);
+            plausibleRotation.Add(180);
         }
 
         if (CanFitInSpace(spaceDim, new Vector2Int(furnitureDim.y, furnitureDim.x)))
         {
-            plausibleRotation.Add(90.0f);
-            plausibleRotation.Add(270.0f);
+            plausibleRotation.Add(90);
+            plausibleRotation.Add(270);
         }
 
         return plausibleRotation;
