@@ -104,22 +104,61 @@ namespace ProceduralInterior.FunctionLib
             if (!occupyCheck || !reserveCheck || !bReserveCheck) return null;
         
             // Convert the sample states and do final check to make sure we're not blocking any path, if yes reverse changes
-        
-        
+
             // Calculate the transform
             Vector3 position = interior.GridPointToWorldPoint(spawnPoint);
             Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, yRotation, 0.0f));
         
             Furniture instance = UnityEngine.Object.Instantiate(inPrefab, position, rotation);
 
-
-            // if we failed to spawn and we still have some rotation to test, try to spawn with another rotation
-            if (!instance && inPlausibleRotations.Count > 0)
+            if (instance)
+                ToggleSampleStatesInRoom(grid, inRoomIndex, occupies, walkables, reserves, blockingReserves);
+            else if (!instance && inPlausibleRotations.Count > 0)
                 instance = TrySpawnInSpace(interior, inRoomIndex, inPrefab, inSpace, inPlausibleRotations, inRandom);
 
             return instance;
         }
 
+        private static void ToggleSampleStatesInRoom(Sample[,] inGrid, int inRoomIndex,
+                                                    List<Vector2Int> inOccupies, List<Vector2Int> inWalkables,
+                                                    List<Vector2Int> inReserves, List<Vector2Int> inBlockingReserves)
+        {
+            ToggleSamplesState(inGrid, inRoomIndex, inOccupies, SampleState.OCCUPIED, SampleState.FREE);
+            ToggleSamplesState(inGrid, inRoomIndex, inWalkables, SampleState.WALKABLE, SampleState.FREE);
+            ToggleSamplesState(inGrid, inRoomIndex, inReserves, SampleState.RESERVED, SampleState.FREE, SampleState.WALKABLE);
+            ToggleSamplesState(inGrid, inRoomIndex, inBlockingReserves, SampleState.RESERVED_BLOCK, SampleState.FREE);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="inGrid"></param>
+        /// <param name="inRoomIndex"></param>
+        /// <param name="inPoints"></param>
+        /// <param name="toState"></param>
+        /// <param name="fromStates"></param>
+        private static void ToggleSamplesState(Sample[,] inGrid, int inRoomIndex, List<Vector2Int> inPoints,
+                                                SampleState toState, params SampleState[] fromStates)
+        {
+            // No need to null check inGrid because at this stage, all previous callers should have made sure nothing is null
+
+            foreach (Vector2Int point in inPoints)
+            {
+                // There's still some cases where certain target sample states
+                // may not be considered prior to this stage but we're not failing anything at this stage
+                if(!GridParser.IsValidPoint(inGrid, point))
+                    continue;
+
+                Sample sample = inGrid[point.x, point.y];
+                
+                if(sample.RoomIndex != inRoomIndex || !GridParser.SampleStateMatch(sample, fromStates))
+                    continue;
+
+                Debug.Log("Updating state");
+                sample.State = toState;
+            }
+        }
+        
         /// <summary>
         /// Calculate available wiggle space for the given Furniture in the given space
         /// after a rotation is applied as well as determine the center point offset of
