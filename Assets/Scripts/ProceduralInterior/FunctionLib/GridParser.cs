@@ -44,47 +44,6 @@ namespace ProceduralInterior.FunctionLib
             return true;
         }
 
-        /// <summary>
-        /// Parse the given grid with a list of samples with a an additional offset applied
-        /// to ensure they match the given roomIndex and match one of the provided states.
-        /// </summary>
-        /// <param name="grid">grid to parse</param>
-        /// <param name="whitelist">sample point to parse</param>
-        /// <param name="constOffset"></param>
-        /// <param name="roomIndex">room index to match</param>
-        /// <param name="statesToMatch">states to match</param>
-        /// <returns>false if any mismatch is detected, true if all check passed</returns>
-        public static bool ParseWhitelistedSamplesWithOffset(Sample[,] grid, List<Vector2Int> whitelist, Vector2Int constOffset,
-                                                                int roomIndex, params SampleState[] statesToMatch)
-        {
-            if (grid == null || whitelist == null) return false;
-
-            foreach (Vector2Int p in whitelist)
-            {
-                Vector2Int point = p + constOffset;
-                
-                // check if within grid and not null
-                if (!IsValidPoint(grid, point)) return false;
-
-                Sample sample = grid[point.x, point.y];
-
-                if (sample.RoomIndex != roomIndex) return false;
-
-                bool matchFound = false;
-                foreach (SampleState state in statesToMatch)
-                {
-                    matchFound = state == sample.State;
-                    
-                    if(matchFound)
-                        break;
-                }
-
-                if (!matchFound) return false;
-            }
-            
-            return true;
-        }
-
         public static bool CanOccupy(Sample[,] grid, List<Vector2Int> toOccupy, int roomIndex)
         {
             if (grid == null || toOccupy == null)

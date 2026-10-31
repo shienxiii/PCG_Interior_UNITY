@@ -25,7 +25,14 @@ namespace ProceduralInterior
         
         [SerializeField, Tooltip("Sample points that needs to be reserved to ensure player can reach this object, treated as non-path")]
         private List<Vector2Int> _blockingReserves;
+
+        public GridSpan BlockSpan => _blockSpan;
         
+        public List<Vector2Int> Occupy           => _occupy;
+        public List<Vector2Int> Walkables        => _walkables;
+        public List<Vector2Int> Reserves         => _reserves;
+        public List<Vector2Int> BlockingReserves => _blockingReserves;
+
         #if UNITY_EDITOR
         [SerializeField] private bool _drawDebug = true;
         [SerializeField] private bool _debugDrawSpan = false;
@@ -60,10 +67,10 @@ namespace ProceduralInterior
                                                     out List<Vector2Int> outReserves,
                                                     out List<Vector2Int> outBlockingReserves)
         {
-            outOccupies         = GridMathLibrary.RotateOffsets(rotation, _occupy);
-            outWalkables        = GridMathLibrary.RotateOffsets(rotation, _walkables);
-            outReserves         = GridMathLibrary.RotateOffsets(rotation, _reserves);
-            outBlockingReserves = GridMathLibrary.RotateOffsets(rotation, _blockingReserves);
+            outOccupies         = GridMathLibrary.RotatePoints(rotation, _occupy);
+            outWalkables        = GridMathLibrary.RotatePoints(rotation, _walkables);
+            outReserves         = GridMathLibrary.RotatePoints(rotation, _reserves);
+            outBlockingReserves = GridMathLibrary.RotatePoints(rotation, _blockingReserves);
 
             List<Vector2Int> blockPoints = SamplerHelperFunctions.MergeLists(outOccupies, outReserves, outBlockingReserves);
             GridSpan blockSpan = new GridSpan(blockPoints);

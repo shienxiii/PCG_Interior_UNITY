@@ -10,38 +10,63 @@ public static class GridMathLibrary
     /// IMPORTANT: This function assumes rotation is 0, 90, 180 and 270 degrees ONLY
     /// </summary>
     /// <param name="rotation"></param>
-    /// <param name="offsets"></param>
+    /// <param name="points"></param>
     /// <returns></returns>
-    public static List<Vector2Int> RotateOffsets(int rotation, ICollection<Vector2Int> offsets)
+    public static List<Vector2Int> RotatePoints(int rotation, ICollection<Vector2Int> points)
     {
-        List<Vector2Int> spawnOffset = new();
+        List<Vector2Int> outPoints = new();
         
-        foreach (Vector2Int offset in offsets)
-            spawnOffset.Add(rotation switch
-                            {
-                                90  => new Vector2Int(offset.y, -offset.x),
-                                180 => new Vector2Int(-offset.x, -offset.y),
-                                270 => new Vector2Int(-offset.y, offset.x),
-                                _ => offset
-                            });
-
-        return spawnOffset;
-    }
-    
-    public static List<Vector2Int> RotateOffsets(int rotation, params Vector2Int[] offsets)
-    {
-        List<Vector2Int> spawnOffset = new();
-        
-        foreach (Vector2Int offset in offsets)
-            spawnOffset.Add(rotation switch
+        foreach (Vector2Int point in points)
+            outPoints.Add(rotation switch
             {
-                90  => new Vector2Int(offset.y, -offset.x),
-                180 => new Vector2Int(-offset.x, -offset.y),
-                270 => new Vector2Int(-offset.y, offset.x),
-                _ => offset
+                90  => new Vector2Int(point.y, -point.x),
+                180 => new Vector2Int(-point.x, -point.y),
+                270 => new Vector2Int(-point.y, point.x),
+                _ => point
             });
 
-        return spawnOffset;
+        return outPoints;
+    }
+    
+    public static List<Vector2Int> RotatePoints(int rotation, params Vector2Int[] points)
+    {
+        List<Vector2Int> outPoints = new();
+        
+        foreach (Vector2Int point in points)
+            outPoints.Add(rotation switch
+            {
+                90  => new Vector2Int(point.y, -point.x),
+                180 => new Vector2Int(-point.x, -point.y),
+                270 => new Vector2Int(-point.y, point.x),
+                _ => point
+            });
+
+        return outPoints;
+    }
+
+    /// <summary>
+    /// Rotates a collection of Vector2Int points and offset it's position.
+    /// NOTE: ROTATION is applied BEFORE POSITION OFFSET
+    /// </summary>
+    /// <param name="rotation"></param>
+    /// <param name="offset"></param>
+    /// <param name="points"></param>
+    /// <returns></returns>
+    public static List<Vector2Int> RotatePointsAndOffset(int rotation, Vector2Int offset,
+                                                            ICollection<Vector2Int> points)
+    {
+        List<Vector2Int> outPoints = new();
+
+        foreach (Vector2Int point in points)
+            outPoints.Add(rotation switch
+            {
+                90  => new Vector2Int(point.y, -point.x) + offset,
+                180 => new Vector2Int(-point.x, -point.y) + offset,
+                270 => new Vector2Int(-point.y, point.x) + offset,
+                _ => point + offset
+            });
+
+        return outPoints;
     }
 
     /// <summary>
@@ -53,7 +78,7 @@ public static class GridMathLibrary
     /// <returns></returns>
     public static GridSpan RotateSpan(int rotation, GridSpan inSpan)
     {
-        List<Vector2Int> points = RotateOffsets(rotation, inSpan.Min, inSpan.Max);
+        List<Vector2Int> points = RotatePoints(rotation, inSpan.Min, inSpan.Max);
 
         return new GridSpan(points);
     }

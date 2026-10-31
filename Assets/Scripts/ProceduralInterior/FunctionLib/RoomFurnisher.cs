@@ -80,15 +80,10 @@ public static class RoomFurnisher
         // null check not needed here as the caller should have checked beforehand
         Sample[,] grid = interior.Grid;
         
-        int yRotationEuler = SamplerHelperFunctions.GetRandomElement(plausibleRotations, random, true);
+        int yRotation = SamplerHelperFunctions.GetRandomElement(plausibleRotations, random, true);
 
-        // Calculate the required span and samples placement to spawn the furniture with the selected rotation 
-        GridSpan furnitureSpan = prefab.GetGridSpaceWithRotation(yRotationEuler,
-                                                                    out List<Vector2Int> occupies,
-                                                                    out List<Vector2Int> walkables,
-                                                                    out List<Vector2Int> reserves,
-                                                                    out List<Vector2Int> blockingReserves);
-        
+        GridSpan furnitureSpan = GridMathLibrary.RotateSpan(yRotation, prefab.BlockSpan);
+
         Vector2Int furnitureDim = furnitureSpan.GetDimension();
         Vector2Int centerOffset = furnitureSpan.Min * -1; // where 0,0 is in furnitureSpan if we're offsetting from Min
         
@@ -101,23 +96,26 @@ public static class RoomFurnisher
         // calculate where the (0,0) of the furniture will be located
         Vector2Int spawnPoint = spawnOffset + centerOffset;
         
-        // check if furniture space will overlap any important samples
+        GetSamplePointsConsumed(prefab, yRotation, spawnPoint,
+                                out List<Vector2Int> occupies,
+                                out List<Vector2Int> walkables,
+                                out List<Vector2Int> reserves,
+                                out List<Vector2Int> blockingReserves);
         
-        // occupies should only overlap free samples
-        bool occupyCheck = GridParser.ParseWhitelistedSamplesWithOffset(grid, occupies, spawnPoint, roomIndex, SampleState.FREE);
-        // reserve can overlap other reserves and walkables
-        bool reserveCheck = GridParser.ParseWhitelistedSamplesWithOffset(grid, reserves, spawnPoint, roomIndex, SampleState.FREE, SampleState.RESERVED, SampleState.WALKABLE);
-        // blocking reserves have the same restriction as occupies
-        bool bReserveCheck = GridParser.ParseWhitelistedSamplesWithOffset(grid, blockingReserves, spawnPoint, roomIndex, SampleState.FREE);
+        // check if furniture space will overlap any important samples
+        bool occupyCheck = GridParser.ParseWhitelistedSamples(grid, occupies, roomIndex, SampleState.FREE);
+        bool reserveCheck = GridParser.ParseWhitelistedSamples(grid, reserves, roomIndex, SampleState.FREE, SampleState.RESERVED, SampleState.WALKABLE);
+        bool bReserveCheck = GridParser.ParseWhitelistedSamples(grid, blockingReserves, roomIndex, SampleState.FREE);
 
         // don't spawn if overlap check fails
         if (!occupyCheck || !reserveCheck || !bReserveCheck) return null;
         
         // Convert the sample states and do final check to make sure we're not blocking any path, if yes reverse changes
         
+        
         // Calculate the transform
         Vector3 position = interior.GridPointToWorldPoint(spawnPoint);
-        Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, yRotationEuler, 0.0f));
+        Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, yRotation, 0.0f));
         
         Furniture instance = UnityEngine.Object.Instantiate(prefab, position, rotation);
 
@@ -129,7 +127,18 @@ public static class RoomFurnisher
         return instance;
     }
 
-    //
+    private static void GetSamplePointsConsumed(Furniture prefab, int rotation, Vector2Int spawnPoint,
+                                                out List<Vector2Int> outOccupies,
+                                                out List<Vector2Int> outWalkables,
+                                                out List<Vector2Int> outReserves,
+                                                out List<Vector2Int> outBlockingReserves)
+    {
+        outOccupies         = GridMathLibrary.RotatePointsAndOffset(rotation, spawnPoint, prefab.Occupy);
+        outWalkables        = GridMathLibrary.RotatePointsAndOffset(rotation, spawnPoint, prefab.Walkables);
+        outReserves         = GridMathLibrary.RotatePointsAndOffset(rotation, spawnPoint, prefab.Reserves);
+        outBlockingReserves = GridMathLibrary.RotatePointsAndOffset(rotation, spawnPoint, prefab.BlockingReserves);
+    }
+    
     private static void RecalculateSpace(Sample[,] samples, GridSpan space)
     {
         
