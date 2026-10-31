@@ -634,12 +634,36 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
+      propertyPath: _reserves.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
+      propertyPath: _walkables.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
       propertyPath: _occupy.Array.data[3].x
       value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
       propertyPath: _occupy.Array.data[3].y
       value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
+      propertyPath: _reserves.Array.data[0].x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
+      propertyPath: _walkables.Array.data[0].x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
+      propertyPath: _blockingReserves.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2253454391566003416, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
+      propertyPath: _blockingReserves.Array.data[0].y
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8540873634703780042, guid: 2fd6e9d98863f9b4396e0fce80faf50b, type: 3}
       propertyPath: m_LocalPosition.x

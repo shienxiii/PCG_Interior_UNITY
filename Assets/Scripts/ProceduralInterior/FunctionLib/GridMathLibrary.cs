@@ -12,7 +12,7 @@ public static class GridMathLibrary
     /// <param name="rotation"></param>
     /// <param name="offsets"></param>
     /// <returns></returns>
-    public static List<Vector2Int> RotateOffsets(int rotation, List<Vector2Int> offsets)
+    public static List<Vector2Int> RotateOffsets(int rotation, ICollection<Vector2Int> offsets)
     {
         List<Vector2Int> spawnOffset = new();
         
@@ -27,6 +27,22 @@ public static class GridMathLibrary
 
         return spawnOffset;
     }
+    
+    public static List<Vector2Int> RotateOffsets(int rotation, params Vector2Int[] offsets)
+    {
+        List<Vector2Int> spawnOffset = new();
+        
+        foreach (Vector2Int offset in offsets)
+            spawnOffset.Add(rotation switch
+            {
+                90  => new Vector2Int(offset.y, -offset.x),
+                180 => new Vector2Int(-offset.x, -offset.y),
+                270 => new Vector2Int(-offset.y, offset.x),
+                _ => offset
+            });
+
+        return spawnOffset;
+    }
 
     /// <summary>
     /// Rotate a GridSpan by the given rotation.
@@ -37,16 +53,7 @@ public static class GridMathLibrary
     /// <returns></returns>
     public static GridSpan RotateSpan(int rotation, GridSpan inSpan)
     {
-        Vector2Int bl = inSpan.Min;
-        Vector2Int tr = inSpan.Max;
-
-        // using hash set as there is a possibility of some corners to be the same
-        HashSet<Vector2Int> corners = new() {bl,
-                                          tr,
-                                          new Vector2Int(tr.x, bl.y) /*br*/,
-                                          new Vector2Int(bl.x, tr.y) /*tl*/};
-
-        List<Vector2Int> points = RotateOffsets(rotation, corners.ToList());
+        List<Vector2Int> points = RotateOffsets(rotation, inSpan.Min, inSpan.Max);
 
         return new GridSpan(points);
     }

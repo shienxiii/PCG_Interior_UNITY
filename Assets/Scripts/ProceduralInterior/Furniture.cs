@@ -92,7 +92,7 @@ namespace ProceduralInterior
             DrawDebugSamples(occupies, Color.red, sampleSize);
             DrawDebugSamples(walkables, Color.cyan, sampleSize);
             DrawDebugSamples(reserves, Color.green, sampleSize);
-            DrawDebugSamples(reserves, Color.yellow, sampleSize);
+            DrawDebugSamples(blockingReserves, Color.yellow, sampleSize);
 
             if (_debugDrawSpan)
             {
