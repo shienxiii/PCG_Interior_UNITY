@@ -24,9 +24,6 @@ namespace ProceduralInterior
         private Dictionary<int, int> _doorWalls  = new(); // Key: Index of next room | Value: wall index in owning Interior for the door
 
         public GridSpan Span              => _span;
-        public Vector2Int Start           => _span.Min;
-        public Vector2Int End             => _span.Max;
-        public Vector2Int Dimension       => _span.GetDimension();
         public List<GridSpan> Spaces      => _spaces;
         public List<int> Borders          => _borders;
         public List<Wall> Walls           => _walls;
@@ -113,7 +110,7 @@ namespace ProceduralInterior
         /// <returns>Owning Interior's relative point</returns>
         public Vector2Int RoomPointToInteriorPoint(Vector2Int inPoint)
         {
-            return inPoint + Start;
+            return inPoint + _span.Min;
         }
 
         public void AddStructure(GameObject inStructure)

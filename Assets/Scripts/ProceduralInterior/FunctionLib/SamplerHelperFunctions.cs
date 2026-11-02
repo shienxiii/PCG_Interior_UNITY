@@ -50,23 +50,22 @@ namespace ProceduralInterior.FunctionLib
                     cardinalSamples.Add(cardinalSample);
 
             }
-            ;
 
-            TestCardinalSample(sample + new Vector2Int(1, 0));
-            TestCardinalSample(sample + new Vector2Int(-1, 0));
-            TestCardinalSample(sample + new Vector2Int(0, 1));
-            TestCardinalSample(sample + new Vector2Int(0, -1));
+            TestCardinalSample(sample + Vector2Int.right);
+            TestCardinalSample(sample + Vector2Int.left);
+            TestCardinalSample(sample + Vector2Int.up);
+            TestCardinalSample(sample + Vector2Int.down);
         }
         
-        public static List<T> MergeLists<T>(params List<T>[] inLists)
+        public static List<T> MergeCollectionsToList<T>(params ICollection<T>[] inLists)
         {
             int size = 0;
-            foreach (List<T> list in inLists)
+            foreach (ICollection<T> list in inLists)
                 if(list != null) size += list.Count;
 
             List<T> mergedList = new List<T>(size);
 
-            foreach (List<T> list in inLists)
+            foreach (ICollection<T> list in inLists)
                 if(list != null) mergedList.AddRange(list);
 
             return mergedList;

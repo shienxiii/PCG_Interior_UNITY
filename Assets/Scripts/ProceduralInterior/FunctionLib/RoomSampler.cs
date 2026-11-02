@@ -94,10 +94,10 @@ namespace ProceduralInterior.FunctionLib
             interior.Grid[currentSample.x, currentSample.y].RoomIndex = roomIndex;
             roomSamples.Add(currentSample);
 
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, new Vector2Int(1, 0), roomIndex);
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, new Vector2Int(-1, 0), roomIndex);
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, new Vector2Int(0, 1), roomIndex);
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, new Vector2Int(0, -1), roomIndex);
+            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, Vector2Int.right, roomIndex);
+            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, Vector2Int.left, roomIndex);
+            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, Vector2Int.up, roomIndex);
+            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, Vector2Int.down, roomIndex);
 
             // collect the cardinal samples for currentSample
             SamplerHelperFunctions.GetCardinalSample(validSamples, cardinalSamples, currentSample);

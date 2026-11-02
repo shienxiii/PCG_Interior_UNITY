@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using ProceduralInterior.Types;
 
@@ -44,39 +45,24 @@ namespace ProceduralInterior.FunctionLib
             return true;
         }
 
-        public static bool AreReservedSamplesReachable(Sample[,] grid, List<Vector2Int> reservedSamples)
+        public static bool AreReservedSamplesReachable(Sample[,] grid, HashSet<Vector2Int> reservedSamples)
         {
-            if (grid == null || grid.Length == 0)
-                return false;
+            if (grid == null || grid.Length == 0) return false;
 
-            if (reservedSamples == null || reservedSamples.Count == 0)
-                return true;
+            if (reservedSamples == null || reservedSamples.Count == 0) return true;
 
-            Vector2Int start = reservedSamples[0];
+            Vector2Int start = reservedSamples.First();
 
-            if (!IsValidPoint(grid, start))
-                return false;
+            if (!IsValidPoint(grid, start)) return false;
 
-            Sample startSample = grid[start.x, start.y];
-
-            if (startSample.State != SampleState.RESERVED)
-                return false;
-
-            int roomIndex = startSample.RoomIndex;
-
-            int width = grid.GetLength(0);
-            int height = grid.GetLength(1);
-
-            // Copy the list so the original is not modified.
-            HashSet<Vector2Int> remaining = new HashSet<Vector2Int>(reservedSamples);
+            int roomIndex = grid[start.x, start.y].RoomIndex;
 
             HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
-
             Queue<Vector2Int> queue = new Queue<Vector2Int>();
 
             queue.Enqueue(start);
             visited.Add(start);
-            remaining.Remove(start);
+            reservedSamples.Remove(start);
 
             Vector2Int[] directions =
             {
@@ -86,7 +72,7 @@ namespace ProceduralInterior.FunctionLib
                 Vector2Int.right
             };
 
-            while (queue.Count > 0 && remaining.Count > 0)
+            while (queue.Count > 0 && reservedSamples.Count > 0)
             {
                 Vector2Int current = queue.Dequeue();
 
@@ -94,28 +80,35 @@ namespace ProceduralInterior.FunctionLib
                 {
                     Vector2Int next = current + direction;
 
-                    if (!IsValidPoint(grid, next))
-                        continue;
-
-                    if (visited.Contains(next))
+                    if (!IsValidPoint(grid, next) || visited.Contains(next))
                         continue;
 
                     Sample sample = grid[next.x, next.y];
 
-                    if (sample.State == SampleState.OCCUPIED ||
-                        sample.RoomIndex != roomIndex)
+                    // Only spread through samples belonging to the starting room.
+                    if (sample.RoomIndex != roomIndex)
+                        continue;
+
+                    // OCCUPIED cannot be traversed.
+                    if (sample.State == SampleState.OCCUPIED)
+                        continue;
+
+                    // RESERVED_BLOCK cannot be traversed unless it is itself
+                    // one of the reserved samples we need to reach.
+                    bool isReserved = reservedSamples.Contains(next);
+
+                    if (sample.State == SampleState.RESERVED_BLOCK && !isReserved)
                         continue;
 
                     visited.Add(next);
                     queue.Enqueue(next);
 
-                    // Remove the reserved point once we reach it.
-                    remaining.Remove(next);
+                    if (isReserved)
+                        reservedSamples.Remove(next);
                 }
             }
 
-            // Any remaining points were unreachable.
-            return remaining.Count == 0;
+            return reservedSamples.Count == 0;
         }
 
         /// <summary>
@@ -218,7 +211,7 @@ namespace ProceduralInterior.FunctionLib
         /// <param name="histogram">the histogram to be evaluated</param>
         /// <param name="startIndex">starting index of the largest rectangle</param>
         /// <returns>The dimension of the largest rectangle</returns>
-        public static Vector2Int LargestRectangleOfHistogram(int[] histogram, out int startIndex)
+        private static Vector2Int LargestRectangleOfHistogram(int[] histogram, out int startIndex)
         {
             startIndex = 0;
             if (histogram == null || histogram.Length == 0)

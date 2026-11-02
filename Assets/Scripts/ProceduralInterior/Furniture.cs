@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using ProceduralInterior.Types;
 using ProceduralInterior.FunctionLib;
 using UnityEngine;
@@ -26,6 +24,7 @@ namespace ProceduralInterior
         [SerializeField, Tooltip("Sample points that needs to be reserved to ensure player can reach this object, treated as non-path")]
         private List<Vector2Int> _blockingReserves;
 
+        // This GridSpan is made up of all _occupy, _reserves and _blocking points
         public GridSpan BlockSpan => _blockSpan;
         
         public List<Vector2Int> Occupy           => _occupy;
@@ -72,7 +71,7 @@ namespace ProceduralInterior
             outReserves         = GridMathLibrary.RotatePoints(rotation, _reserves);
             outBlockingReserves = GridMathLibrary.RotatePoints(rotation, _blockingReserves);
 
-            List<Vector2Int> blockPoints = SamplerHelperFunctions.MergeLists(outOccupies, outReserves, outBlockingReserves);
+            List<Vector2Int> blockPoints = SamplerHelperFunctions.MergeCollectionsToList(outOccupies, outReserves, outBlockingReserves);
             GridSpan blockSpan = new GridSpan(blockPoints);
 
             return blockSpan;
@@ -81,7 +80,7 @@ namespace ProceduralInterior
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            List<Vector2Int> samples = SamplerHelperFunctions.MergeLists(_occupy, _reserves, _blockingReserves);
+            List<Vector2Int> samples = SamplerHelperFunctions.MergeCollectionsToList(_occupy, _reserves, _blockingReserves);
             _blockSpan = new GridSpan(samples);
         }
 

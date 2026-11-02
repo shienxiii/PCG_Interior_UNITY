@@ -9,17 +9,17 @@ namespace ProceduralInterior.FunctionLib
         /// <summary>
         /// Generate a list of Wall for a room based on the WallSample stored in the owning Interior
         /// </summary>
-        /// <param name="inInterior">The Interior that owns the room</param>
-        /// <param name="inRoom">The room which walls to be generated</param>
-        public static void GenerateWallForRoom(Interior inInterior, int roomIndex)
+        /// <param name="interior">The Interior that owns the room</param>
+        /// <param name="inRoomIndex">Index of room to generate walls</param>
+        public static void GenerateWallForRoom(Interior interior, int inRoomIndex)
         {
             // null check and index check
-            if (inInterior == null || roomIndex < 0 || roomIndex >= inInterior.Rooms.Count) return;
+            if (interior == null || inRoomIndex < 0 || inRoomIndex >= interior.Rooms.Count) return;
 
-            Room room = inInterior.Rooms[roomIndex];
+            Room room = interior.Rooms[inRoomIndex];
             if (room == null) return;
 
-            List<WallGroup> wallGroups = SortBorders(inInterior.Borders, roomIndex, room.Borders, room.Walls);
+            List<WallGroup> wallGroups = SortBorders(interior.Borders, inRoomIndex, room.Borders, room.Walls);
             if (wallGroups == null) return;
 
             foreach (WallGroup wallGroup in wallGroups)
