@@ -47,6 +47,7 @@ namespace ProceduralInterior.FunctionLib
                 int key = SamplerHelperFunctions.GetRandomElement(keys, interior.FurnishingRandom, true);
 
                 Furniture instance = TrySpawnInSpace(interior, inRoomIndex, inPrefab, inAvailableSpaces[key], validSpaces[key], interior.FurnishingRandom);
+                
                 if (instance != null)
                 {
                     // recalculate the space and append to availableSpaces
@@ -77,9 +78,6 @@ namespace ProceduralInterior.FunctionLib
         {
             // null check not needed here as the caller should have checked beforehand
             Sample[,] grid = interior.Grid;
-            
-            // We'll need the room soon to check for reserves reachability and adding new points
-            Room room = interior.Rooms[inRoomIndex];
 
             int yRotation = SamplerHelperFunctions.GetRandomElement(inPlausibleRotations, inRandom, true);
             
@@ -99,58 +97,70 @@ namespace ProceduralInterior.FunctionLib
                                     out List<Vector2Int> blockingReserves);
         
             // check if furniture space will overlap any important samples it shouldn't overlap
-            bool occupyCheck = GridParser.ParseWhitelistedSamples(grid, occupies, inRoomIndex, SampleState.FREE);
-            bool reserveCheck = GridParser.ParseWhitelistedSamples(grid, reserves, inRoomIndex, SampleState.FREE, SampleState.RESERVED, SampleState.WALKABLE);
-            bool bReserveCheck = GridParser.ParseWhitelistedSamples(grid, blockingReserves, inRoomIndex, SampleState.FREE);
+            bool occupyCheck = GridParser.MatchSampleStates(grid, occupies, inRoomIndex, SampleState.FREE);
+            bool reserveCheck = GridParser.MatchSampleStates(grid, reserves, inRoomIndex, SampleState.FREE, SampleState.RESERVED, SampleState.WALKABLE);
+            bool bReserveCheck = GridParser.MatchSampleStates(grid, blockingReserves, inRoomIndex, SampleState.FREE);
             
             // don't spawn if overlap check fails
             // TODO: Figure out if we can fix it but shifting position
             if (!occupyCheck || !reserveCheck || !bReserveCheck) return null;
 
-            List<Vector2Int> reserved = SamplerHelperFunctions.MergeCollectionsToList(reserves, room.Reserved);
-            
-            
-            // TODO: Final check: Check that the path to be taken will not block any path of the reserved or blocking reserved sample point 
-            Dictionary<Vector2Int, SampleState> cache = ToggleSampleStatesInRoom(grid, inRoomIndex, occupies,
-                walkables, reserves, blockingReserves);
+            // Final check: Check that the path to be taken will not block any path of the reserved or blocking reserved sample point 
+            bool canSpawn = TryToggleStates(interior, inRoomIndex, occupies, walkables, reserves, blockingReserves);
 
             
-        
-            // Convert the sample states and do final check to make sure we're not blocking any path, if yes reverse changes
 
-            // Calculate the transform
-            Vector3 position = interior.GridPointToWorldPoint(spawnPoint);
-            Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, yRotation, 0.0f));
-        
-            Furniture instance = UnityEngine.Object.Instantiate(inPrefab, position, rotation);
-            
-            if (!instance && inPlausibleRotations.Count > 0)
+            Furniture instance = null;
+
+            if (canSpawn)
+            {
+                // Calculate the transform
+                Vector3 position = interior.GridPointToWorldPoint(spawnPoint);
+                Quaternion rotation = Quaternion.Euler(new Vector3(0.0f, yRotation, 0.0f));
+                instance = UnityEngine.Object.Instantiate(inPrefab, position, rotation);
+            }
+            else if (inPlausibleRotations.Count > 0)
                 instance = TrySpawnInSpace(interior, inRoomIndex, inPrefab, inSpace, inPlausibleRotations, inRandom);
 
             return instance;
         }
 
         /// <summary>
+        /// Attempt to toggle the states in the provided points and check that points being toggled
+        /// will not prevent all the previously and newly reserved points from being reachable
         /// </summary>
-        /// <param name="inGrid"></param>
+        /// <param name="interior"></param>
         /// <param name="inRoomIndex"></param>
         /// <param name="inOccupies"></param>
         /// <param name="inWalkables"></param>
         /// <param name="inReserves"></param>
         /// <param name="inBlockingReserves"></param>
         /// <returns></returns>
-        private static Dictionary<Vector2Int, SampleState> ToggleSampleStatesInRoom(Sample[,] inGrid, int inRoomIndex,
-                                                    List<Vector2Int> inOccupies, List<Vector2Int> inWalkables,
-                                                    List<Vector2Int> inReserves, List<Vector2Int> inBlockingReserves)
+        private static bool TryToggleStates(Interior interior, int inRoomIndex,
+                                            List<Vector2Int> inOccupies, List<Vector2Int> inWalkables,
+                                            List<Vector2Int> inReserves, List<Vector2Int> inBlockingReserves)
         {
-            Dictionary<Vector2Int, SampleState> stateCache = new();
+            if (!interior) return false;
             
-            ToggleSamplesState(inGrid, inRoomIndex, inOccupies, stateCache, SampleState.OCCUPIED, SampleState.FREE);
-            ToggleSamplesState(inGrid, inRoomIndex, inWalkables, stateCache, SampleState.WALKABLE, SampleState.FREE);
-            ToggleSamplesState(inGrid, inRoomIndex, inReserves, stateCache, SampleState.RESERVED, SampleState.FREE, SampleState.WALKABLE);
-            ToggleSamplesState(inGrid, inRoomIndex, inBlockingReserves, stateCache, SampleState.RESERVED_BLOCK, SampleState.FREE);
-
-            return stateCache;
+            Sample[,] grid = interior.Grid;
+            Room room = interior.Rooms[inRoomIndex];
+            
+            Dictionary<Vector2Int, SampleState> prevStates = new();
+            
+            ToggleSamplesState(grid, inRoomIndex, inOccupies, prevStates, SampleState.OCCUPIED, SampleState.FREE);
+            ToggleSamplesState(grid, inRoomIndex, inWalkables, prevStates, SampleState.WALKABLE, SampleState.FREE);
+            ToggleSamplesState(grid, inRoomIndex, inReserves, prevStates, SampleState.RESERVED, SampleState.FREE, SampleState.WALKABLE);
+            ToggleSamplesState(grid, inRoomIndex, inBlockingReserves, prevStates, SampleState.RESERVED_BLOCK, SampleState.FREE);
+            
+            // Compile all reserved samples to a reserved samples to a hashset to check reachability
+            HashSet<Vector2Int> reachablePoints = SamplerHelperFunctions.MergeCollectionsToHashSet(inReserves, inBlockingReserves, room.Reserved);
+            bool allPointsReachable = GridParser.ArePointsReachable(grid, inRoomIndex, reachablePoints);
+            
+            if(!allPointsReachable)
+                foreach (KeyValuePair<Vector2Int, SampleState> state in prevStates)
+                    grid[state.Key.x, state.Key.y].State = state.Value;
+            
+            return allPointsReachable;
         }
 
         /// <summary>

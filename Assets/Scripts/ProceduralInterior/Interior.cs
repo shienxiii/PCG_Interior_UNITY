@@ -40,6 +40,7 @@ namespace ProceduralInterior
             [SerializeField] public bool _applySeed          = false;
             [SerializeField] public int _debugRoomSeed       = 5000;
             [SerializeField] public int _debugFurnishingSeed = 5000;
+            [SerializeField] private bool _drawSamples       = false;
             [SerializeField] private bool _drawFloor         = false;
             [SerializeField] private bool _drawWall          = false;
             [SerializeField] private bool _drawReserved      = false;
@@ -212,6 +213,66 @@ namespace ProceduralInterior
                     RoomFurnisher.FurnishRoom(this, i, _debugTheme);
                 }
             }
+            
+            private void OnDrawGizmos()
+            {
+                if (_areas == null)
+                    _areas = GetComponent<SplineContainer>();
+
+                ProceduralInteriorSettings settings = InteriorManager.Settings;
+
+                if (!settings || (_grid?.Length ?? 0) == 0 ||
+                    _areas.Splines.Count == 0 || _splineToDebug < 0 ||
+                    _splineToDebug >= _areas.Splines.Count) return;
+                
+                if(_drawSamples)
+                    DrawSamples(settings);
+
+                if(_drawFloor || _drawWall || _drawReserved)
+                    DrawRoomDebug(settings);
+            }
+
+            private void DrawSamples(ProceduralInteriorSettings settings)
+            {
+                if (!settings) return;
+                
+                Vector3 size = new Vector3(settings.SampleDimension.x - 0.1f, 0.0f, settings.SampleDimension.x - 0.1f);
+                
+                int maxX = _grid.GetLength(0);
+                int maxY = _grid.GetLength(1);
+
+                for (int x = 0; x < maxX; x++)
+                {
+                    for (int y = 0; y < maxY; y++)
+                    {
+                        Sample sample = _grid[x, y];
+                        
+                        if(sample == null) continue;
+                        
+                        switch(sample.State)
+                        {
+                            case SampleState.FREE:
+                                Gizmos.color = Color.gray;
+                                break;
+                            case SampleState.WALKABLE:
+                                Gizmos.color = Color.cyan;
+                                break;
+                            case SampleState.RESERVED:
+                                Gizmos.color = Color.green;
+                                break;
+                            case SampleState.RESERVED_BLOCK:
+                                Gizmos.color = Color.orange;
+                                break;
+                            case SampleState.OCCUPIED:
+                                Gizmos.color = Color.red;
+                                break;
+                        }
+
+                        Vector3 center = GridPointToWorldPoint(x, y);
+                        Gizmos.DrawCube(center, size);
+                    }
+                }
+            }
 
             private void DrawRoomDebug(ProceduralInteriorSettings settings)
             {
@@ -271,24 +332,6 @@ namespace ProceduralInterior
                             Gizmos.DrawSphere(point, 0.4f);
                         }
                 }
-            }
-            
-            private void OnDrawGizmos()
-            {
-                if (_areas == null)
-                    _areas = GetComponent<SplineContainer>();
-
-                ProceduralInteriorSettings settings = InteriorManager.Settings;
-
-                if (!settings || (_grid?.Length ?? 0) == 0 ||
-                    _areas.Splines.Count == 0 || _splineToDebug < 0 ||
-                    _splineToDebug >= _areas.Splines.Count) return;
-
-                if(_drawFloor || _drawWall || _drawReserved)
-                    DrawRoomDebug(settings);
-                
-                
-                
             }
 
             private void OnValidate()

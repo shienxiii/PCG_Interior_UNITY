@@ -57,17 +57,33 @@ namespace ProceduralInterior.FunctionLib
             TestCardinalSample(sample + Vector2Int.down);
         }
         
-        public static List<T> MergeCollectionsToList<T>(params ICollection<T>[] inLists)
+        public static List<T> MergeCollectionsToList<T>(params ICollection<T>[] inColl)
         {
             int size = 0;
-            foreach (ICollection<T> list in inLists)
+            foreach (ICollection<T> list in inColl)
                 if(list != null) size += list.Count;
 
             List<T> mergedList = new List<T>(size);
 
-            foreach (ICollection<T> list in inLists)
-                if(list != null) mergedList.AddRange(list);
+            foreach (ICollection<T> collection in inColl)
+                if(collection != null) mergedList.AddRange(collection);
 
+            return mergedList;
+        }
+        
+        public static HashSet<T> MergeCollectionsToHashSet<T>(params ICollection<T>[] inCollections)
+        {
+            int size = 0;
+            foreach (ICollection<T> list in inCollections)
+                if(list != null) size += list.Count;
+
+            HashSet<T> mergedList = new HashSet<T>(size);
+
+            foreach (ICollection<T> collection in inCollections)
+                if(collection != null) mergedList.UnionWith(collection);
+
+            mergedList.TrimExcess();
+            
             return mergedList;
         }
     }

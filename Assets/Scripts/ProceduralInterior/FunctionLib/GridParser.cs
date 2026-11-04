@@ -16,7 +16,7 @@ namespace ProceduralInterior.FunctionLib
         /// <param name="roomIndex">room index to match</param>
         /// <param name="statesToMatch">states to match</param>
         /// <returns>false if any mismatch is detected, true if all check passed</returns>
-        public static bool ParseWhitelistedSamples(Sample[,] grid, List<Vector2Int> whitelist,
+        public static bool MatchSampleStates(Sample[,] grid, List<Vector2Int> whitelist,
                                                     int roomIndex, params SampleState[] statesToMatch)
         {
             if (grid == null || whitelist == null) return false;
@@ -45,24 +45,22 @@ namespace ProceduralInterior.FunctionLib
             return true;
         }
 
-        public static bool AreReservedSamplesReachable(Sample[,] grid, HashSet<Vector2Int> reservedSamples)
+        public static bool ArePointsReachable(Sample[,] grid, int inRoomIndex, HashSet<Vector2Int> points)
         {
             if (grid == null || grid.Length == 0) return false;
 
-            if (reservedSamples == null || reservedSamples.Count == 0) return true;
+            if (points == null || points.Count == 0) return true;
 
-            Vector2Int start = reservedSamples.First();
+            Vector2Int start = points.First();
 
             if (!IsValidPoint(grid, start)) return false;
-
-            int roomIndex = grid[start.x, start.y].RoomIndex;
 
             HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
             Queue<Vector2Int> queue = new Queue<Vector2Int>();
 
             queue.Enqueue(start);
             visited.Add(start);
-            reservedSamples.Remove(start);
+            points.Remove(start);
 
             Vector2Int[] directions =
             {
@@ -72,7 +70,7 @@ namespace ProceduralInterior.FunctionLib
                 Vector2Int.right
             };
 
-            while (queue.Count > 0 && reservedSamples.Count > 0)
+            while (queue.Count > 0 && points.Count > 0)
             {
                 Vector2Int current = queue.Dequeue();
 
@@ -82,33 +80,29 @@ namespace ProceduralInterior.FunctionLib
 
                     if (!IsValidPoint(grid, next) || visited.Contains(next))
                         continue;
-
-                    Sample sample = grid[next.x, next.y];
-
-                    // Only spread through samples belonging to the starting room.
-                    if (sample.RoomIndex != roomIndex)
-                        continue;
-
-                    // OCCUPIED cannot be traversed.
-                    if (sample.State == SampleState.OCCUPIED)
-                        continue;
-
-                    // RESERVED_BLOCK cannot be traversed unless it is itself
-                    // one of the reserved samples we need to reach.
-                    bool isReserved = reservedSamples.Contains(next);
-
-                    if (sample.State == SampleState.RESERVED_BLOCK && !isReserved)
-                        continue;
-
+                    
                     visited.Add(next);
-                    queue.Enqueue(next);
+                    
+                    Sample sample = grid[next.x, next.y];
+                    
+                    // should only proceed to next steps if room index match
+                    if (sample.RoomIndex != inRoomIndex)
+                        continue;
 
-                    if (isReserved)
-                        reservedSamples.Remove(next);
+                    // as long as roomIndex match and is part of the reached points, we'll consider it reachable
+                    if (points.Contains(next))
+                        points.Remove(next);
+
+                    // now we test if we can use it as path
+                    if (sample.State == SampleState.OCCUPIED || sample.State == SampleState.RESERVED_BLOCK)
+                        continue;
+
+                    
+                    queue.Enqueue(next);
                 }
             }
 
-            return reservedSamples.Count == 0;
+            return points.Count == 0;
         }
 
         /// <summary>
