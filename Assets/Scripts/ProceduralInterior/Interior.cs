@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using ProceduralInterior.Types;
 using ProceduralInterior.FunctionLib;
 using UnityEngine.Splines;
+using Debug = UnityEngine.Debug;
 
 
 namespace ProceduralInterior
@@ -196,6 +198,9 @@ namespace ProceduralInterior
             [ContextMenu("Debug Gen")]
             public void DebugGenerate()
             {
+                Stopwatch stopwatch = new Stopwatch();
+
+                stopwatch.Start();
                 if (!_applySeed)
                 {
                     _debugRoomSeed = unchecked((int)System.DateTime.Now.Ticks);
@@ -204,14 +209,24 @@ namespace ProceduralInterior
 
                 SeedInterior(_debugRoomSeed, _debugFurnishingSeed);
                 SampleInterior(_splineToDebug);
-                    
+
+                float sampling = stopwatch.ElapsedMilliseconds;
+
                 if(_spawnStructures)
                     InteriorSpawner.SpawnStructures(this);
+                
+                float structure = stopwatch.ElapsedMilliseconds;
 
                 for (int i = 0; i < _rooms.Count && _debugTheme != null; i++)
                 {
                     RoomFurnisher.FurnishRoom(this, i, _debugTheme);
                 }
+                
+                stopwatch.Stop();
+                
+                float furnished = stopwatch.ElapsedMilliseconds;
+                
+                Debug.Log($"Sampling completed in {sampling} ms | Structures spawned in {structure - sampling} ms | Furnished in {furnished - structure}");
             }
             
             private void OnDrawGizmos()

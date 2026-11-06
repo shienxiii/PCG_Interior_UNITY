@@ -8,6 +8,24 @@ namespace ProceduralInterior.FunctionLib
 {
     public static class RoomSampler
     {
+        public struct RoomSamplerState
+        {
+            public List<Vector2Int> RoomSamples; // samples to be cached as a room
+            public List<Vector2Int> NextSamples; // samples directly next to the samples in RoomSamples that are currently unassigned
+
+            public void Initialize()
+            {
+                RoomSamples = new();
+                NextSamples = new();
+            }
+
+            public void Clear()
+            {
+                RoomSamples.Clear();
+                NextSamples.Clear();;
+            }
+        }
+
         /// <summary>
         /// To be called after an interior grid sample have been initialized and valid samples have been determined.
         /// Generate all the rooms from the provided interior and validSamples
@@ -41,26 +59,26 @@ namespace ProceduralInterior.FunctionLib
                     targetSize = Math.Clamp((validSamples.Count / roomCount) + interior.RoomRandom.Next(-roomSizeOffset, roomSizeOffset + 1),
                                                 settings.MinSamplesPerRoom,
                                                 validSamples.Count);
-
-                List<Vector2Int> roomSamples     = new List<Vector2Int>(); // samples to be cached as a room
-                List<Vector2Int> cardinalSamples = new List<Vector2Int>(); // samples directly next to the samples in roomSamples that are currently unassigned
+                
+                RoomSamplerState state = new RoomSamplerState();
+                state.Initialize();
 
                 int roomIndex = roomCache.Count;
 
                 // get a starting point to generate the room and add to the cardinalSamples list
-                cardinalSamples.Add(SamplerHelperFunctions.GetRandomElement(validSamples, interior.RoomRandom, false));
+                state.NextSamples.Add(SamplerHelperFunctions.GetRandomElement(validSamples, interior.RoomRandom, false));
 
                 // Generate the room recursively
-                GenerateRoom_Recursive(interior, validSamples, roomSamples, cardinalSamples, targetSize, roomIndex);
+                GenerateRoom_Recursive(interior, validSamples, ref state, targetSize, roomIndex);
 
-                if (roomSamples.Count < settings.MinSamplesPerRoom)
+                if (state.RoomSamples.Count < settings.MinSamplesPerRoom)
                 {
-                    int result = TryMeldSamplesToExistingRoom(interior, roomSamples, roomCache, roomIndex);
+                    int result = TryMeldSamplesToExistingRoom(interior, state, roomCache, roomIndex);
                     if (result >= 0)
                         continue;
                 }
 
-                roomCache.Add(roomSamples);
+                roomCache.Add(state.RoomSamples);
 
             }
 
@@ -80,31 +98,30 @@ namespace ProceduralInterior.FunctionLib
         /// </summary>
         /// <param name="interior">the interior in which to generate the room for</param>
         /// <param name="validSamples">list of index to samples that are available to be used for room generation</param>
-        /// <param name="roomSamples">list of index to samples for the current room being generated</param>
-        /// <param name="cardinalSamples">list of index to available samples to directly next to all roomSamples in the cardinal directions</param>
+        /// <param name="inState"></param>
         /// <param name="targetSize">the minimum number of samples we want in roomSamples</param>
         /// <param name="roomIndex">index of the room currently being generated</param>
-        private static void GenerateRoom_Recursive(Interior interior, List<Vector2Int> validSamples, List<Vector2Int> roomSamples, List<Vector2Int> cardinalSamples, int targetSize, int roomIndex)
+        private static void GenerateRoom_Recursive(Interior interior, List<Vector2Int> validSamples, ref RoomSamplerState inState, int targetSize, int roomIndex)
         {
             // Get a random sample from cardinalSamples and remove the sample from both roomSamples and cardinalSamples
-            Vector2Int currentSample = SamplerHelperFunctions.GetRandomElement(cardinalSamples, interior.RoomRandom, true);
+            Vector2Int currentSample = SamplerHelperFunctions.GetRandomElement(inState.NextSamples, interior.RoomRandom, true);
             validSamples.Remove(currentSample);
 
             // Assign roomIndex to the position on interior.Samples and assign currentSample to roomSamples
             interior.Grid[currentSample.x, currentSample.y].RoomIndex = roomIndex;
-            roomSamples.Add(currentSample);
+            inState.RoomSamples.Add(currentSample);
 
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, Vector2Int.right, roomIndex);
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, Vector2Int.left, roomIndex);
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, Vector2Int.up, roomIndex);
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, Vector2Int.down, roomIndex);
+            ExtendRoomInDirection(interior, validSamples, ref inState, currentSample, Vector2Int.right, roomIndex);
+            ExtendRoomInDirection(interior, validSamples, ref inState, currentSample, Vector2Int.left, roomIndex);
+            ExtendRoomInDirection(interior, validSamples, ref inState, currentSample, Vector2Int.up, roomIndex);
+            ExtendRoomInDirection(interior, validSamples, ref inState, currentSample, Vector2Int.down, roomIndex);
 
             // collect the cardinal samples for currentSample
-            SamplerHelperFunctions.GetCardinalSample(validSamples, cardinalSamples, currentSample);
+            SamplerHelperFunctions.GetCardinalSample(validSamples, inState.NextSamples, currentSample);
 
             // Call this function recursively until roomSamples.Count equal or exceed targetSize or cardinalSamples is empty
-            if (roomSamples.Count < targetSize && cardinalSamples.Count > 0)
-                GenerateRoom_Recursive(interior, validSamples, roomSamples, cardinalSamples, targetSize, roomIndex);
+            if (inState.RoomSamples.Count < targetSize && inState.NextSamples.Count > 0)
+                GenerateRoom_Recursive(interior, validSamples, ref inState, targetSize, roomIndex);
 
         }
 
@@ -116,39 +133,40 @@ namespace ProceduralInterior.FunctionLib
         /// </summary>
         /// <param name="interior">the interior in which to generate the room for</param>
         /// <param name="validSamples">list of index to samples that are available to be used for room generation</param>
-        /// <param name="roomSamples">list of index to samples for the current room being generated</param>
-        /// <param name="cardinalSamples">list of index to available samples to directly next to all roomSamples in the cardinal directions</param>
+        /// <param name="inState">current state of the sampled points</param>
         /// <param name="fromSample">the sample to extend out from</param>
         /// <param name="direction">the direction to extend towards</param>
         /// <param name="roomIndex">index of the room currently being generated</param>
-        private static void ExtendRoomInDirection(Interior interior, List<Vector2Int> validSamples, List<Vector2Int> roomSamples, List<Vector2Int> cardinalSamples, Vector2Int fromSample, Vector2Int direction, int roomIndex)
+        private static void ExtendRoomInDirection(Interior interior, List<Vector2Int> validSamples, ref RoomSamplerState inState, Vector2Int fromSample, Vector2Int direction, int roomIndex)
         {
             Vector2Int currentSample = fromSample + direction;
 
-            if (!cardinalSamples.Contains(currentSample)) return;
+            if (!inState.NextSamples.Contains(currentSample)) return;
 
             // we got a valid sample, include it in the room and remove from AvailableSamples and CardinalSamples
             interior.Grid[currentSample.x, currentSample.y].RoomIndex = roomIndex;
-            roomSamples.Add(currentSample);
+            inState.RoomSamples.Add(currentSample);
             validSamples.Remove(currentSample);
-            cardinalSamples.Remove(currentSample);
+            inState.NextSamples.Remove(currentSample);
 
             // run this function recursively until reaching a sample point that's not in CardinalSamples
-            ExtendRoomInDirection(interior, validSamples, roomSamples, cardinalSamples, currentSample, direction, roomIndex);
+            ExtendRoomInDirection(interior, validSamples, ref inState, currentSample, direction, roomIndex);
 
             // collect the cardinal samples for currentSample
-            SamplerHelperFunctions.GetCardinalSample(validSamples, cardinalSamples, currentSample);
+            SamplerHelperFunctions.GetCardinalSample(validSamples, inState.NextSamples, currentSample);
         }
-
+        
         /// <summary>
-        /// Try to meld the provided roomSamples to the closest neighbouring room
+        /// 
         /// </summary>
-        /// <param name="roomSamples">list of samples to meld</param>
-        /// <param name="currentIndex">this is the roomIndex to ignore besides -1</param>
-        /// <return>index of the room melded into</return>
-        private static int TryMeldSamplesToExistingRoom(Interior interior, List<Vector2Int> roomSamples, List<List<Vector2Int>> inRoomCache, int currentIndex)
+        /// <param name="interior"></param>
+        /// <param name="inState"></param>
+        /// <param name="inRoomCache"></param>
+        /// <param name="currentIndex"></param>
+        /// <returns></returns>
+        private static int TryMeldSamplesToExistingRoom(Interior interior, in RoomSamplerState inState, List<List<Vector2Int>> inRoomCache, int currentIndex)
         {
-            if (interior == null || interior.Grid == null || roomSamples == null || inRoomCache == null) return -1;
+            if (interior == null || interior.Grid == null || inState.RoomSamples == null || inRoomCache == null) return -1;
 
             List<int> roomCandidates = new List<int>();
 
@@ -168,7 +186,7 @@ namespace ProceduralInterior.FunctionLib
             }
             ;
 
-            foreach (Vector2Int sample in roomSamples)
+            foreach (Vector2Int sample in inState.RoomSamples)
             {
                 GetCardinalSampleValue(sample + new Vector2Int(1, 0));
                 GetCardinalSampleValue(sample + new Vector2Int(-1, 0));
@@ -180,7 +198,7 @@ namespace ProceduralInterior.FunctionLib
 
             int newIndex = SamplerHelperFunctions.GetRandomElement(roomCandidates, interior.RoomRandom);
 
-            foreach (Vector2Int sample in roomSamples)
+            foreach (Vector2Int sample in inState.RoomSamples)
             {
                 interior.Grid[sample.x, sample.y].RoomIndex = newIndex;
                 inRoomCache[newIndex].Add(sample);
